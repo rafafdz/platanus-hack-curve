@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    min-height: 0;
+    min-width: 0;
+  }
+}
+
+body {
+  background: var(--color-gray-900);
+  color: var(--color-gray-100);
+}

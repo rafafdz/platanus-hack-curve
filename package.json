@@ -9,7 +9,8 @@
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
-    "convex:dev": "convex dev"
+    "convex:dev": "convex dev",
+    "deploy": "pnpx convex deploy --cmd 'pnpm run build'"
   },
   "devDependencies": {
     "@tanstack/router-plugin": "^1.81.9",

@@ -19,7 +19,6 @@ import { Route as AuthedAdminIndexImport } from './routes/_authed.admin/index'
 import { Route as AuthedAdminIdImport } from './routes/_authed.admin/$id'
 import { Route as AuthedAdminIdIndexImport } from './routes/_authed.admin/$id.index'
 import { Route as AuthedAdminIdTeamsImport } from './routes/_authed.admin/$id.teams'
-import { Route as AuthedAdminIdConfigImport } from './routes/_authed.admin/$id.config'
 import { Route as AuthedAdminIdAnnouncementsImport } from './routes/_authed.admin/$id.announcements'
 import { Route as AuthedAdminIdActivitiesImport } from './routes/_authed.admin/$id.activities'
 
@@ -69,12 +68,6 @@ const AuthedAdminIdIndexRoute = AuthedAdminIdIndexImport.update({
 const AuthedAdminIdTeamsRoute = AuthedAdminIdTeamsImport.update({
   id: '/teams',
   path: '/teams',
-  getParentRoute: () => AuthedAdminIdRoute,
-} as any)
-
-const AuthedAdminIdConfigRoute = AuthedAdminIdConfigImport.update({
-  id: '/config',
-  path: '/config',
   getParentRoute: () => AuthedAdminIdRoute,
 } as any)
 
@@ -152,13 +145,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedAdminIdAnnouncementsImport
       parentRoute: typeof AuthedAdminIdImport
     }
-    '/_authed/admin/$id/config': {
-      id: '/_authed/admin/$id/config'
-      path: '/config'
-      fullPath: '/admin/$id/config'
-      preLoaderRoute: typeof AuthedAdminIdConfigImport
-      parentRoute: typeof AuthedAdminIdImport
-    }
     '/_authed/admin/$id/teams': {
       id: '/_authed/admin/$id/teams'
       path: '/teams'
@@ -181,7 +167,6 @@ declare module '@tanstack/react-router' {
 interface AuthedAdminIdRouteChildren {
   AuthedAdminIdActivitiesRoute: typeof AuthedAdminIdActivitiesRoute
   AuthedAdminIdAnnouncementsRoute: typeof AuthedAdminIdAnnouncementsRoute
-  AuthedAdminIdConfigRoute: typeof AuthedAdminIdConfigRoute
   AuthedAdminIdTeamsRoute: typeof AuthedAdminIdTeamsRoute
   AuthedAdminIdIndexRoute: typeof AuthedAdminIdIndexRoute
 }
@@ -189,7 +174,6 @@ interface AuthedAdminIdRouteChildren {
 const AuthedAdminIdRouteChildren: AuthedAdminIdRouteChildren = {
   AuthedAdminIdActivitiesRoute: AuthedAdminIdActivitiesRoute,
   AuthedAdminIdAnnouncementsRoute: AuthedAdminIdAnnouncementsRoute,
-  AuthedAdminIdConfigRoute: AuthedAdminIdConfigRoute,
   AuthedAdminIdTeamsRoute: AuthedAdminIdTeamsRoute,
   AuthedAdminIdIndexRoute: AuthedAdminIdIndexRoute,
 }
@@ -222,7 +206,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthedAdminIndexRoute
   '/admin/$id/activities': typeof AuthedAdminIdActivitiesRoute
   '/admin/$id/announcements': typeof AuthedAdminIdAnnouncementsRoute
-  '/admin/$id/config': typeof AuthedAdminIdConfigRoute
   '/admin/$id/teams': typeof AuthedAdminIdTeamsRoute
   '/admin/$id/': typeof AuthedAdminIdIndexRoute
 }
@@ -235,7 +218,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthedAdminIndexRoute
   '/admin/$id/activities': typeof AuthedAdminIdActivitiesRoute
   '/admin/$id/announcements': typeof AuthedAdminIdAnnouncementsRoute
-  '/admin/$id/config': typeof AuthedAdminIdConfigRoute
   '/admin/$id/teams': typeof AuthedAdminIdTeamsRoute
   '/admin/$id': typeof AuthedAdminIdIndexRoute
 }
@@ -250,7 +232,6 @@ export interface FileRoutesById {
   '/_authed/admin/': typeof AuthedAdminIndexRoute
   '/_authed/admin/$id/activities': typeof AuthedAdminIdActivitiesRoute
   '/_authed/admin/$id/announcements': typeof AuthedAdminIdAnnouncementsRoute
-  '/_authed/admin/$id/config': typeof AuthedAdminIdConfigRoute
   '/_authed/admin/$id/teams': typeof AuthedAdminIdTeamsRoute
   '/_authed/admin/$id/': typeof AuthedAdminIdIndexRoute
 }
@@ -266,7 +247,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/$id/activities'
     | '/admin/$id/announcements'
-    | '/admin/$id/config'
     | '/admin/$id/teams'
     | '/admin/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -278,7 +258,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/$id/activities'
     | '/admin/$id/announcements'
-    | '/admin/$id/config'
     | '/admin/$id/teams'
     | '/admin/$id'
   id:
@@ -291,7 +270,6 @@ export interface FileRouteTypes {
     | '/_authed/admin/'
     | '/_authed/admin/$id/activities'
     | '/_authed/admin/$id/announcements'
-    | '/_authed/admin/$id/config'
     | '/_authed/admin/$id/teams'
     | '/_authed/admin/$id/'
   fileRoutesById: FileRoutesById
@@ -348,7 +326,6 @@ export const routeTree = rootRoute
       "children": [
         "/_authed/admin/$id/activities",
         "/_authed/admin/$id/announcements",
-        "/_authed/admin/$id/config",
         "/_authed/admin/$id/teams",
         "/_authed/admin/$id/"
       ]
@@ -363,10 +340,6 @@ export const routeTree = rootRoute
     },
     "/_authed/admin/$id/announcements": {
       "filePath": "_authed.admin/$id.announcements.tsx",
-      "parent": "/_authed/admin/$id"
-    },
-    "/_authed/admin/$id/config": {
-      "filePath": "_authed.admin/$id.config.tsx",
       "parent": "/_authed/admin/$id"
     },
     "/_authed/admin/$id/teams": {

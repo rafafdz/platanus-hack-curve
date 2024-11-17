@@ -3,7 +3,7 @@ import { mutation, MutationCtx, query, QueryCtx } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "../_generated/dataModel";
 
-async function checkEventAuthorization(ctx: QueryCtx | MutationCtx, id: Id<"events">) {
+export async function checkEventAuthorization(ctx: QueryCtx | MutationCtx, id: Id<"events">) {
   const userId = await getAuthUserId(ctx);
   if (!userId) throw new ConvexError({ code: 401, message: "Not authenticated" });
 

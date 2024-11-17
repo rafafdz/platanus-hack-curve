@@ -1,6 +1,4 @@
-import * as React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { queryClient } from "../client";
 import { convexQuery } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
@@ -15,6 +13,7 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
   const { data: events } = useSuspenseQuery(convexQuery(api.events.list, {}));
+  console.log(events);
 
   return (
     <div className="p-2">
@@ -29,10 +28,10 @@ function HomeComponent() {
         ))}
       </ul>
       <div className="flex gap-2">
-        <Link className="px-2 h-9 flex justify-center items-center bg-gray-700 rounded" to="/new">
+        <Link className="px-2 h-9 flex justify-center items-center bg-base-700 rounded-sm" to="/new">
           Crear
         </Link>
-        <Link className="px-2 h-9 flex justify-center items-center bg-gray-700 rounded" to="/admin">
+        <Link className="px-2 h-9 flex justify-center items-center bg-base-700 rounded-sm" to="/admin">
           Admin
         </Link>
       </div>

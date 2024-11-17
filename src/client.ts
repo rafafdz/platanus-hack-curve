@@ -14,3 +14,5 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+convexQueryClient.connect(queryClient);

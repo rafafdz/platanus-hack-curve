@@ -17,6 +17,9 @@ importers:
       '@convex-dev/react-query':
         specifier: 0.0.0-alpha.8
         version: 0.0.0-alpha.8(@tanstack/react-query@5.60.5(react@18.3.1))(convex@1.17.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      '@octokit/webhooks':
+        specifier: ^13.3.0
+        version: 13.3.0
       '@tailwindcss/vite':
         specifier: 4.0.0-alpha.34
         version: 4.0.0-alpha.34(@babel/core@7.26.0)(postcss@8.4.49)(svelte@5.2.0)(vite@5.4.11(@types/node@22.9.0)(lightningcss@1.28.1))
@@ -60,6 +63,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.3.2
         version: 4.3.3(vite@5.4.11(@types/node@22.9.0)(lightningcss@1.28.1))
+      jose:
+        specifier: ^5.9.6
+        version: 5.9.6
       vite:
         specifier: ^5.4.8
         version: 5.4.11(@types/node@22.9.0)(lightningcss@1.28.1)
@@ -818,6 +824,27 @@ packages:
   '@node-rs/bcrypt@1.9.0':
     resolution: {integrity: sha512-u2OlIxW264bFUfvbFqDz9HZKFjwe8FHFtn7T/U8mYjPZ7DWYpbUB+/dkW/QgYfMSfR0ejkyuWaBBe0coW7/7ig==}
     engines: {node: '>= 10'}
+
+  '@octokit/openapi-types@22.2.0':
+    resolution: {integrity: sha512-QBhVjcUa9W7Wwhm6DBFu6ZZ+1/t/oYxqc2tp81Pi41YNuJinbFRx8B133qVOrAaBbF7D/m0Et6f9/pZt9Rc+tg==}
+
+  '@octokit/openapi-webhooks-types@8.3.0':
+    resolution: {integrity: sha512-vKLsoR4xQxg4Z+6rU/F65ItTUz/EXbD+j/d4mlq2GW8TsA4Tc8Kdma2JTAAJ5hrKWUQzkR/Esn2fjsqiVRYaQg==}
+
+  '@octokit/request-error@6.1.5':
+    resolution: {integrity: sha512-IlBTfGX8Yn/oFPMwSfvugfncK2EwRLjzbrpifNaMY8o/HTEAFqCA1FZxjD9cWvSKBHgrIhc4CSBIzMxiLsbzFQ==}
+    engines: {node: '>= 18'}
+
+  '@octokit/types@13.6.1':
+    resolution: {integrity: sha512-PHZE9Z+kWXb23Ndik8MKPirBPziOc0D2/3KH1P+6jK5nGWe96kadZuE4jev2/Jq7FvIfTlT2Ltg8Fv2x1v0a5g==}
+
+  '@octokit/webhooks-methods@5.1.0':
+    resolution: {integrity: sha512-yFZa3UH11VIxYnnoOYCVoJ3q4ChuSOk2IVBBQ0O3xtKX4x9bmKb/1t+Mxixv2iUhzMdOl1qeWJqEhouXXzB3rQ==}
+    engines: {node: '>= 18'}
+
+  '@octokit/webhooks@13.3.0':
+    resolution: {integrity: sha512-TUkJLtI163Bz5+JK0O+zDkQpn4gKwN+BovclUvCj6pI/6RXrFqQvUMRS2M+Rt8Rv0qR3wjoMoOPmpJKeOh0nBg==}
+    engines: {node: '>= 18'}
 
   '@oslojs/asn1@1.0.0':
     resolution: {integrity: sha512-zw/wn0sj0j0QKbIXfIlnEcTviaCzYOY3V5rAyjR6YtOByFtJiT574+8p9Wlach0lZH9fddD4yb9laEAIl4vXQA==}
@@ -2160,6 +2187,26 @@ snapshots:
       '@node-rs/bcrypt-win32-arm64-msvc': 1.9.0
       '@node-rs/bcrypt-win32-ia32-msvc': 1.9.0
       '@node-rs/bcrypt-win32-x64-msvc': 1.9.0
+
+  '@octokit/openapi-types@22.2.0': {}
+
+  '@octokit/openapi-webhooks-types@8.3.0': {}
+
+  '@octokit/request-error@6.1.5':
+    dependencies:
+      '@octokit/types': 13.6.1
+
+  '@octokit/types@13.6.1':
+    dependencies:
+      '@octokit/openapi-types': 22.2.0
+
+  '@octokit/webhooks-methods@5.1.0': {}
+
+  '@octokit/webhooks@13.3.0':
+    dependencies:
+      '@octokit/openapi-webhooks-types': 8.3.0
+      '@octokit/request-error': 6.1.5
+      '@octokit/webhooks-methods': 5.1.0
 
   '@oslojs/asn1@1.0.0':
     dependencies:

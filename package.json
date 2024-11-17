@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "dev": "vite --port=3001",
+    "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
+    "convex": "convex",
     "convex:dev": "convex dev",
     "deploy": "pnpx convex deploy --cmd 'pnpm run build'"
   },
@@ -18,12 +19,14 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.2",
+    "jose": "^5.9.6",
     "vite": "^5.4.8"
   },
   "dependencies": {
     "@auth/core": "0.36.0",
     "@convex-dev/auth": "^0.0.74",
     "@convex-dev/react-query": "0.0.0-alpha.8",
+    "@octokit/webhooks": "^13.3.0",
     "@tailwindcss/vite": "4.0.0-alpha.34",
     "@tanstack/react-query": "^5.60.5",
     "@tanstack/react-router": "^1.81.10",

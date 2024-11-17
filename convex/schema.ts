@@ -10,6 +10,8 @@ const schema = defineSchema({
     slug: v.string(),
     endsAt: v.number(),
     isPublic: v.boolean(),
+    iframe: v.optional(v.string()),
+    currentActivity: v.union(v.literal("iframe"), v.literal("place")),
   })
     .index("by_slug", ["slug"])
     .index("by_isPublic", ["isPublic"]),
@@ -23,6 +25,12 @@ const schema = defineSchema({
   activities: defineTable({
     eventId: v.id("events"),
     name: v.string(),
+    startsAt: v.number(),
+    endsAt: v.number(),
+  }).index("by_eventId", ["eventId"]),
+  announcements: defineTable({
+    eventId: v.id("events"),
+    content: v.string(),
     startsAt: v.number(),
     endsAt: v.number(),
   }).index("by_eventId", ["eventId"]),

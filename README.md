@@ -6,7 +6,7 @@ Display interactivo para hackathones.
 
 - [x] Countdown
 - [x] Siguientes actividades
-- [ ] Feed de eventos push de GitHub
+- [x] Feed de eventos push de GitHub
 - [ ] Anuncios
 - [ ] Música actual
   - [ ] Via API

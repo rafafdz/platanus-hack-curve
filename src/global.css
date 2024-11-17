@@ -2,6 +2,7 @@
 
 @theme {
   --default-font-family: "JetBrains Mono", monospace;
+  --spacing: 0.5ch;
 
   /* Base color: zinc tailwind pallete */
   --color-base-50: oklch(0.985 0 0);
@@ -49,13 +50,14 @@
 }
 
 @layer components {
-  :root {
-    --simple-gradient-hue: 0deg;
-  }
   .simple-gradient {
     /* hue rotate 7deg and reduce brightness by 8% */
-    --bg-from-color: oklch(70% 70% var(--simple-gradient-hue));
+    --bg-from-color: oklch(70% 70% var(--simple-gradient-hue, 0deg));
     --bg-to-color: oklch(from var(--bg-from-color) l c calc(h + 20));
     background: linear-gradient(100deg, var(--bg-from-color), var(--bg-to-color));
+  }
+
+  .images-are-pixelated {
+    image-rendering: pixelated;
   }
 }

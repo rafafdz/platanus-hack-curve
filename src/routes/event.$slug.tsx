@@ -3,7 +3,8 @@ import { queryClient } from "../client";
 import { convexQuery } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { act, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Marquee from "react-fast-marquee";
 
 import { RPlace } from "../components/rplace";
 import { cva } from "cva";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/event/$slug")({
 
 function RouteComponent() {
   return (
-    <div className="grid grid-cols-[2fr_3fr] grid-rows-[1fr_min-content] h-full overflow-clip p-2 gap-2">
+    <div className="grid grid-cols-[2fr_5fr] grid-rows-[1fr_min-content] h-full overflow-clip p-2 gap-2">
       <div className="row-span-2 flex flex-col justify-between">
         <div>
           <GoToAdmin />
@@ -35,6 +36,7 @@ function RouteComponent() {
       <RPlace />
       <div>
         <PushEvents />
+        <Announcement />
       </div>
     </div>
   );
@@ -89,6 +91,26 @@ const activitiesStyles = cva({
   },
 });
 
+function ActivityDateTime({ startsAt, endsAt }: { startsAt: number; endsAt: number }) {
+  const startFormatter = Intl.DateTimeFormat("es-CL", {
+    weekday: "long",
+    hour: "numeric",
+    minute: "numeric",
+  });
+
+  const endFormatter = Intl.DateTimeFormat("es-CL", {
+    weekday: endsAt - startsAt > 1000 * 60 * 60 * 24 ? "long" : undefined,
+    hour: "numeric",
+    minute: "numeric",
+  });
+
+  return (
+    <>
+      {startFormatter.format(new Date(startsAt))} - {endFormatter.format(new Date(endsAt))}
+    </>
+  );
+}
+
 function Activities() {
   const { slug } = Route.useParams();
   const { data: activities } = useSuspenseQuery(convexQuery(api.activities.listByEventSlug, { eventSlug: slug }));
@@ -113,7 +135,7 @@ function Activities() {
             <div>
               <div className="font-bold text-2xl">{activity.name}</div>
               <div>
-                {new Date(activity.startsAt).toLocaleString()} - {new Date(activity.endsAt).toLocaleString()}
+                <ActivityDateTime startsAt={activity.startsAt} endsAt={activity.endsAt} />
               </div>
             </div>
           </li>
@@ -192,9 +214,9 @@ function PushEvents() {
   );
 
   return (
-    <div className="flex flex-col h-full w-full flex-nowra justify-between gap-2 relative">
+    <div className="flex flex-col justify-between gap-1 relative">
       {binned.map((bin, i) => (
-        <div key={i} className="flex flex-row gap-2 h-full overflow-clip w-max">
+        <div key={i} className="flex flex-row gap-1 h-full overflow-clip w-max">
           {bin.map((pushEvent) => (
             <PushEvent pushEvent={pushEvent} key={pushEvent._id} />
           ))}
@@ -209,12 +231,8 @@ function PushEvents() {
 function PushEvent({ pushEvent }: { pushEvent: FunctionReturnType<typeof api.githubPushEvents.list>[number] }) {
   return (
     <div className="p-[1px] rounded-sm simple-gradient" style={{ "--simple-gradient-hue": pushEvent.timestamp % 360 }}>
-      <div className="inline-flex gap-2 items-center p-2 bg-base-900/95 h-full rounded-sm">
-        <img
-          src={`https://github.com/${pushEvent.author}.png`}
-          alt={pushEvent.author}
-          className="w-6 h-6 rounded-full shrink-0"
-        />
+      <div className="inline-flex gap-2 items-center px-2 bg-base-900/95 h-full rounded-xs text-sm">
+        <img src={`https://github.com/${pushEvent.author}.png`} alt={pushEvent.author} className="w-4 h-4 shrink-0" />
         <span className="text-base-200 shrink-0">{pushEvent.author}</span>
         <span className="text-base-400 font-light shrink-0">pushed</span>
         <span className="text-base-200 line-clamp-1 text-ellipsis max-w-64">{pushEvent.message}</span>
@@ -229,4 +247,33 @@ declare module "react" {
   interface CSSProperties {
     [key: `--${string}`]: string | number;
   }
+}
+
+function Announcement() {
+  const { slug } = Route.useParams();
+  const { data: announcements } = useSuspenseQuery(
+    convexQuery(api.announcements.getCurrentByEventSlug, { eventSlug: slug })
+  );
+
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  console.log({ currentTime, startsAT: announcements[0].startsAt, endsAt: announcements[0].endsAt });
+  const current = announcements.find(
+    (announcement) => announcement.startsAt <= currentTime && currentTime < announcement.endsAt
+  );
+
+  if (!current) return null;
+
+  return (
+    <Marquee pauseOnHover autoFill speed={40}>
+      <div className="mr-8 mt-2">{current.content}</div>
+    </Marquee>
+  );
 }

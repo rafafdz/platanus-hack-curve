@@ -15,8 +15,10 @@ import type {
 } from "convex/server";
 import type * as activities from "../activities.js";
 import type * as admin_activities from "../admin/activities.js";
+import type * as admin_announcements from "../admin/announcements.js";
 import type * as admin_events from "../admin/events.js";
 import type * as admin_github from "../admin/github.js";
+import type * as announcements from "../announcements.js";
 import type * as auth from "../auth.js";
 import type * as events from "../events.js";
 import type * as githubPushEvents from "../githubPushEvents.js";
@@ -37,8 +39,10 @@ import type * as version from "../version.js";
 declare const fullApi: ApiFromModules<{
   activities: typeof activities;
   "admin/activities": typeof admin_activities;
+  "admin/announcements": typeof admin_announcements;
   "admin/events": typeof admin_events;
   "admin/github": typeof admin_github;
+  announcements: typeof announcements;
   auth: typeof auth;
   events: typeof events;
   githubPushEvents: typeof githubPushEvents;

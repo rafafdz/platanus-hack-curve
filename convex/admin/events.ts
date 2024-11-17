@@ -52,7 +52,7 @@ export const patch = mutation({
     id: v.id("events"),
     event: v.object({
       name: v.string(),
-      startsAt: v.number(),
+      endsAt: v.number(),
     }),
   },
   handler: async (ctx, { id, event: eventData }) => {

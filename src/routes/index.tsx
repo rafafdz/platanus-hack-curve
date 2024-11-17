@@ -13,25 +13,30 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
   const { data: events } = useSuspenseQuery(convexQuery(api.events.list, {}));
-  console.log(events);
 
   return (
-    <div className="p-2">
-      <h3>Welcome Home!</h3>
-      <ul>
-        {events?.map((event) => (
-          <li key={event._id}>
-            <Link to="/event/$slug" params={{ slug: event.slug }}>
-              {event.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <div className="flex gap-2">
-        <Link className="px-2 h-9 flex justify-center items-center bg-base-700 rounded-sm" to="/new">
+    <div className="p-2 max-w-lg mx-auto flex flex-col h-full">
+      <div className="grow flex flex-col">
+        <h1 className="text-center mb-2">Hack</h1>
+        <ul className="w-full max-w-sm mx-auto">
+          {events?.map((event) => (
+            <li key={event._id}>
+              <Link
+                to="/event/$slug"
+                params={{ slug: event.slug }}
+                className="block bg-base-900 p-4 border border-base-500 rounded-sm text-2xl text-center"
+              >
+                {event.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="flex gap-2 justify-center text-base-500">
+        <Link className="underline" to="/new">
           Crear
         </Link>
-        <Link className="px-2 h-9 flex justify-center items-center bg-base-700 rounded-sm" to="/admin">
+        <Link className="underline" to="/admin">
           Admin
         </Link>
       </div>

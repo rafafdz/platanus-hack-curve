@@ -3,7 +3,7 @@ import { queryClient } from "../../client";
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { api } from "../../../convex/_generated/api";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { Input } from "../../components/admin/input";
+import { Input, Label } from "../../components/admin/forms";
 import { FormEvent, useState } from "react";
 import { Button } from "../../components/admin/button";
 import { Id } from "../../../convex/_generated/dataModel";
@@ -48,16 +48,17 @@ function RouteComponent() {
   const [endAt, setEndAt] = useState("");
 
   return (
-    <div className="p-2">
-      <h1 className="text-2xl">Activities</h1>
+    <div>
+      <h2 className="font-bold">Actividades</h2>
+
       <form onSubmit={createActivityMutation.mutate}>
         <div>
-          <label htmlFor="new-activity">Name</label>
+          <Label htmlFor="new-activity">Nombre</Label>{" "}
           <Input id="new-activity" type="text" required value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
         <div>
-          <label htmlFor="new-startAt">Starts at</label>
+          <Label htmlFor="new-startAt">Empieza en</Label>{" "}
           <Input
             id="new-startAt"
             type="datetime-local"
@@ -68,7 +69,7 @@ function RouteComponent() {
         </div>
 
         <div>
-          <label htmlFor="new-endAt">Ends at</label>
+          <Label htmlFor="new-endAt">Termina en</Label>{" "}
           <Input
             id="new-endAt"
             type="datetime-local"
@@ -78,23 +79,31 @@ function RouteComponent() {
           />
         </div>
 
-        <Button type="submit">Create</Button>
-
-        {createActivityMutation.isError && <div>Error: {createActivityMutation.error.message}</div>}
+        <Button type="submit">Crear</Button>
+        {createActivityMutation.isError && (
+          <div className="text-red-600">Error: {createActivityMutation.error.message}</div>
+        )}
       </form>
+
+      <hr className="my-4 border-base-500" />
+
       <ul className="flex flex-col gap-2">
         {activities?.map((activity) => (
           <li key={activity._id} className="bg-base-900 rounded-sm">
-            <div>{activity.name}</div>
-            <div>{new Date(activity.startsAt).toLocaleString()}</div>
-            <div>{new Date(activity.endsAt).toLocaleString()}</div>
-            <button
-              onClick={() => deleteActivityMutation.mutate(activity._id)}
-              className="bg-red-500"
-              disabled={deleteActivityMutation.isPending}
-            >
-              Eliminar
-            </button>
+            <div className="flex justify-between">
+              <div className="font-bold">{activity.name}</div>
+              <Button
+                variant="danger"
+                onClick={() => deleteActivityMutation.mutate(activity._id)}
+                disabled={deleteActivityMutation.isPending}
+              >
+                Eliminar
+              </Button>
+            </div>
+
+            <div>
+              {new Date(activity.startsAt).toLocaleString()} a {new Date(activity.endsAt).toLocaleString()}
+            </div>
           </li>
         ))}
       </ul>

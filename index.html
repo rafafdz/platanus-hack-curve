@@ -12,9 +12,15 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
       rel="stylesheet"
     />
+    <!-- Preload banana -->
+    <link rel="preload" href="./src/assets/banana-dance.gif" as="image" />
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="flex justify-center items-center h-full images-are-pixelated">
+        <img src="./src/assets/banana-dance.gif?inline" alt="Banana Dance" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

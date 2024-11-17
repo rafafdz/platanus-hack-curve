@@ -3,8 +3,19 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { lazy, useEffect, useRef } from "react";
 import { api } from "../../convex/_generated/api";
+import bananaDance from "../assets/banana-dance.gif";
+
+function Loading() {
+  return (
+    <div className="flex justify-center items-center h-full images-are-pixelated">
+      <img src={bananaDance} alt="loading" />
+    </div>
+  );
+}
 
 export const Route = createRootRoute({
+  wrapInSuspense: true,
+  pendingComponent: Loading,
   component: RootComponent,
 });
 

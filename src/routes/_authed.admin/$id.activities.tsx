@@ -88,7 +88,7 @@ function RouteComponent() {
       <hr className="my-4 border-base-500" />
 
       <ul className="flex flex-col gap-2">
-        {activities?.map((activity) => (
+        {activities.map((activity) => (
           <li key={activity._id} className="bg-base-900 rounded-sm">
             <div className="flex justify-between">
               <div className="font-bold">{activity.name}</div>

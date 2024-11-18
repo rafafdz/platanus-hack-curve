@@ -25,23 +25,25 @@ export const Route = createFileRoute("/event/$slug")({
 function RouteComponent() {
   return (
     <div className="grid grid-cols-[2fr_5fr] grid-rows-[1fr_min-content] h-full overflow-clip p-2 gap-2">
-      <div className="row-span-2 flex flex-col justify-between">
+      <div className="flex flex-col justify-between">
         <div className="flex flex-col gap-2">
           <GoToAdmin />
         </div>
         <div className="flex flex-col gap-2">
           <Activities />
-          <div>Música actual</div>
-          <TimeLeft />
-          <CurrentUrl />
         </div>
+      </div>
+      <div className="row-start-2 flex flex-col gap-2 h-full">
+        <div className="bg-base-900 flex justify-center items-center h-11">Música actual</div>
+        <TimeLeft />
+        <CurrentUrl />
       </div>
       <Suspense fallback={<PlaceLoading />}>
         <Place />
       </Suspense>
       <div className="flex flex-col gap-1">
-        <div className="flex gap-1">
-          <div className="w-48 shrink-0">Equipo actual</div>
+        <div className="flex gap-2">
+          <div className="w-48 shrink-0 bg-base-900 rounded-sm flex justify-center items-center">Equipo actual</div>
           <PushEvents />
         </div>
         <Announcement />
@@ -234,15 +236,14 @@ function PushEvents() {
   );
 
   return (
-    <div className="flex flex-col justify-between gap-1 relative">
+    <div className="flex flex-col justify-between gap-1 relative min-w-full">
       {binned.map((bin, i) => (
-        <div key={i} className="flex flex-row gap-1 h-full overflow-clip w-max">
+        <div key={i} className="flex flex-row gap-1 overflow-clip w-max h-7">
           {bin.map((pushEvent) => (
             <PushEvent pushEvent={pushEvent} key={pushEvent._id} />
           ))}
         </div>
       ))}
-      {/* fade */}
       <div className="absolute inset-y-0 right-0 -mr-8 w-24 bg-gradient-to-l from-base-900 to-transparent" />
     </div>
   );
@@ -252,11 +253,15 @@ function PushEvent({ pushEvent }: { pushEvent: FunctionReturnType<typeof api.git
   return (
     <div className="p-[1px] rounded-sm simple-gradient" style={{ "--simple-gradient-hue": pushEvent.timestamp % 360 }}>
       <div className="inline-flex gap-2 items-center px-2 bg-base-900/95 h-full rounded-xs text-sm">
-        <img src={`https://github.com/${pushEvent.author}.png`} alt={pushEvent.author} className="w-4 h-4 shrink-0" />
+        <img
+          src={`https://github.com/${pushEvent.author}.png`}
+          alt={pushEvent.author}
+          className="w-4 h-4 shrink-0 rounded-xs"
+        />
         <span className="text-base-200 shrink-0">{pushEvent.author}</span>
-        <span className="text-base-400 font-light shrink-0">pushed</span>
+        <span className="text-base-300/75 font-light shrink-0">pushed</span>
         <span className="text-base-200 line-clamp-1 text-ellipsis max-w-64">{pushEvent.message}</span>
-        <span className="text-base-400 font-light shrink-0">to</span>
+        <span className="text-base-300/75 font-light shrink-0">to</span>
         <span className="text-base-200 shrink-0">{pushEvent.repoName}</span>
       </div>
     </div>
@@ -350,55 +355,64 @@ function Place() {
   console.log(nextPlacementAfter);
   // https://github.com/BetterTyped/react-zoom-pan-pinch/blob/master/src/stories/examples/image-responsive/example.tsx
   return (
-    <div className="flex flex-col" ref={containerRef}>
-      <TransformWrapper
-        centerOnInit
-        key={`${containerSize.width}x${containerSize.height}`}
-        initialScale={scale}
-        minScale={scale * 0.9}
-        maxScale={scale * 4}
-        wheel={{ smoothStep: 0.05 }}
-        pinch={{ step: 10 }}
-      >
-        <TransformComponent wrapperClass="bg-base-800 rounded" wrapperStyle={{ width: "100%", height: "100%" }}>
-          <svg
-            viewBox={`0 0 ${place.colors[0].length} ${place.colors.length}`}
-            width={place.colors[0].length}
-            height={place.colors.length}
-            shape-rendering="crispEdges"
-          >
-            {place.colors.map((colorsRow, y) => (
-              <g key={y}>
-                {colorsRow.map((color, x) => (
-                  <rect
-                    x={x}
-                    y={y}
-                    width={1}
-                    height={1}
-                    fill={color}
-                    key={`${x}-${y}`}
-                    className="hover:outline hover:outline-base-700 hover:z-10"
-                    onClick={() => colorPixelMutation.mutate({ x, y })}
-                  />
-                ))}
-              </g>
-            ))}
-          </svg>
-        </TransformComponent>
-      </TransformWrapper>
-      <div>
+    <div className="flex flex-col gap-2" ref={containerRef}>
+      <div className="flex justify-between">
         <div>
-          <RadioGroup.Root value={selectedColor} onValueChange={(value) => setSelectedColor(value)}>
+          <RadioGroup.Root
+            value={selectedColor}
+            onValueChange={(value) => setSelectedColor(value)}
+            className="flex gap-2 mx-1"
+          >
             {place.colorOptions.map((color, i) => (
-              <RadioGroup.Item value={color} key={i}>
-                <span className="inline-block w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
-              </RadioGroup.Item>
+              <RadioGroup.Item
+                value={color}
+                key={i}
+                className="inline-block aspect-square h-4 rounded-full data-[state=checked]:outline-2 outline-offset-1"
+                style={{ backgroundColor: color }}
+              ></RadioGroup.Item>
             ))}
           </RadioGroup.Root>
         </div>
         <div>
           <TimeToWait time={nextPlacementAfter} />
         </div>
+      </div>
+      <div ref={containerRef} className="h-full">
+        <TransformWrapper
+          centerOnInit
+          key={`${containerSize.width}x${containerSize.height}`}
+          initialScale={scale}
+          minScale={scale * 0.9}
+          maxScale={scale * 4}
+          wheel={{ smoothStep: 0.05 }}
+          pinch={{ step: 10 }}
+        >
+          <TransformComponent wrapperClass="bg-base-800 rounded" wrapperStyle={{ width: "100%", height: "100%" }}>
+            <svg
+              viewBox={`0 0 ${place.colors[0].length} ${place.colors.length}`}
+              width={place.colors[0].length}
+              height={place.colors.length}
+              shape-rendering="crispEdges"
+            >
+              {place.colors.map((colorsRow, y) => (
+                <g key={y}>
+                  {colorsRow.map((color, x) => (
+                    <rect
+                      x={x}
+                      y={y}
+                      width={1}
+                      height={1}
+                      fill={color}
+                      key={`${x}-${y}`}
+                      className="hover:outline hover:outline-base-700 hover:z-10"
+                      onClick={() => colorPixelMutation.mutate({ x, y })}
+                    />
+                  ))}
+                </g>
+              ))}
+            </svg>
+          </TransformComponent>
+        </TransformWrapper>
       </div>
     </div>
   );

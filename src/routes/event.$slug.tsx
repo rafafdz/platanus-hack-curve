@@ -1,10 +1,12 @@
 import { createFileRoute, ErrorComponentProps, Link } from "@tanstack/react-router";
 import { queryClient } from "../client";
-import { convexQuery } from "@convex-dev/react-query";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Marquee from "react-fast-marquee";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import * as RadioGroup from "@radix-ui/react-radio-group";
 
 import { cva } from "cva";
 import { FunctionReturnType } from "convex/server";
@@ -34,8 +36,8 @@ function RouteComponent() {
           <CurrentUrl />
         </div>
       </div>
-      <Suspense fallback={<RPlaceLoading />}>
-        <RPlace />
+      <Suspense fallback={<PlaceLoading />}>
+        <Place />
       </Suspense>
       <div className="flex flex-col gap-1">
         <div className="flex gap-1">
@@ -90,7 +92,7 @@ function CurrentUrl() {
   const { slug } = Route.useParams();
   const url = new URL(window.location.href);
   return (
-    <div className="bg-base-800 rounded-sm p-2 text-center text-sm">
+    <div className="text-center text-sm">
       <span className="text-base-50">{url.host}</span>
       <span className="text-base-300">/event/</span>
       <span className="text-primary-500">{slug}</span>
@@ -289,36 +291,130 @@ function Announcement() {
   if (!current) return null;
 
   return (
-    <Marquee pauseOnHover autoFill speed={40} className="py-2 leading-tight">
+    <Marquee pauseOnHover autoFill speed={40} className="leading-tight">
       <div className="mr-8">{current.content}</div>
     </Marquee>
   );
 }
 
-function RPlaceLoading() {
+function PlaceLoading() {
   return (
     <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col">Cargando</div>
   );
 }
-function RPlace() {
+function Place() {
   const { slug } = Route.useParams();
-  const { data: place } = useSuspenseQuery(convexQuery(api.place.get, { eventSlug: slug }));
-  const { data: lastCommit } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
+  const {
+    data: { nextPlacementAfter },
+  } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
 
+  const { data: place } = useSuspenseQuery(convexQuery(api.place.get, { eventSlug: slug }));
+
+  const [selectedColor, setSelectedColor] = useState(place.colorOptions[0]);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  const handleResize = useCallback(() => {
+    if (!containerRef.current) return;
+
+    const { width, height } = containerRef.current.getBoundingClientRect();
+    setContainerSize({ width, height });
+  }, []);
+
+  useLayoutEffect(() => {
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
+
+  const scale = useMemo(() => {
+    if (!containerSize.width || !containerSize.height) return 1;
+
+    const scale = Math.min(containerSize.width / place.colors[0].length, containerSize.height / place.colors.length);
+    console.log(scale);
+    return scale;
+  }, [containerSize, place.colors]);
+
+  const colorPixel = useConvexMutation(api.place.updateColor);
+
+  const colorPixelMutation = useMutation({
+    mutationFn: async ({ x, y }: { x: number; y: number }) => {
+      await colorPixel({
+        eventId: place.eventId,
+        cell: { x, y, color: selectedColor },
+      });
+    },
+  });
+
+  console.log(nextPlacementAfter);
+  // https://github.com/BetterTyped/react-zoom-pan-pinch/blob/master/src/stories/examples/image-responsive/example.tsx
   return (
-    <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col">
-      {place.colors.map((colorsRow, y) => (
-        <div key={y} className="flex flex-row *:w-[8px] *:h-[8px]">
-          {colorsRow.map((color, x) => (
-            <div
-              key={`${x}-${y}`}
-              style={{
-                backgroundColor: `oklch(${color.l} ${color.c} ${color.h})`,
-              }}
-            />
-          ))}
+    <div className="flex flex-col" ref={containerRef}>
+      <TransformWrapper
+        centerOnInit
+        key={`${containerSize.width}x${containerSize.height}`}
+        initialScale={scale}
+        minScale={scale * 0.9}
+        maxScale={scale * 4}
+        wheel={{ smoothStep: 0.05 }}
+        pinch={{ step: 10 }}
+      >
+        <TransformComponent wrapperClass="bg-base-800 rounded" wrapperStyle={{ width: "100%", height: "100%" }}>
+          <svg
+            viewBox={`0 0 ${place.colors[0].length} ${place.colors.length}`}
+            width={place.colors[0].length}
+            height={place.colors.length}
+            shape-rendering="crispEdges"
+          >
+            {place.colors.map((colorsRow, y) => (
+              <g key={y}>
+                {colorsRow.map((color, x) => (
+                  <rect
+                    x={x}
+                    y={y}
+                    width={1}
+                    height={1}
+                    fill={color}
+                    key={`${x}-${y}`}
+                    className="hover:outline hover:outline-base-700 hover:z-10"
+                    onClick={() => colorPixelMutation.mutate({ x, y })}
+                  />
+                ))}
+              </g>
+            ))}
+          </svg>
+        </TransformComponent>
+      </TransformWrapper>
+      <div>
+        <div>
+          <RadioGroup.Root value={selectedColor} onValueChange={(value) => setSelectedColor(value)}>
+            {place.colorOptions.map((color, i) => (
+              <RadioGroup.Item value={color} key={i}>
+                <span className="inline-block w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+              </RadioGroup.Item>
+            ))}
+          </RadioGroup.Root>
         </div>
-      ))}
+        <div>
+          <TimeToWait time={nextPlacementAfter} />
+        </div>
+      </div>
     </div>
   );
+}
+
+function TimeToWait({ time }: { time: number }) {
+  const [timeLeft, setTimeLeft] = useState(time);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(time - Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [time]);
+
+  if (timeLeft <= 0) return null;
+
+  return <div className="text-base-400 text-center">Next color in {formatTimeLeft(timeLeft)}</div>;
 }

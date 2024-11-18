@@ -1,7 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { oklchSchema } from "./schema";
 import { createPlace } from "./place";
 
 export const getBySlug = query({
@@ -33,8 +32,8 @@ export const create = mutation({
     slug: v.string(),
     endsAt: v.number(),
     place: v.object({
-      defaultColor: oklchSchema,
-      colorOptions: v.array(oklchSchema),
+      defaultColor: v.string(),
+      colorOptions: v.array(v.string()),
       width: v.number(),
       height: v.number(),
     }),

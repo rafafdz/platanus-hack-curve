@@ -50,6 +50,9 @@ importers:
       react-fast-marquee:
         specifier: ^1.6.5
         version: 1.6.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-zoom-pan-pinch:
+        specifier: ^3.6.1
+        version: 3.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwindcss:
         specifier: 4.0.0-alpha.34
         version: 4.0.0-alpha.34
@@ -1686,6 +1689,13 @@ packages:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
     engines: {node: '>=0.10.0'}
 
+  react-zoom-pan-pinch@3.6.1:
+    resolution: {integrity: sha512-SdPqdk7QDSV7u/WulkFOi+cnza8rEZ0XX4ZpeH7vx3UZEg7DoyuAy3MCmm+BWv/idPQL2Oe73VoC0EhfCN+sZQ==}
+    engines: {node: '>=8', npm: '>=5'}
+    peerDependencies:
+      react: '*'
+      react-dom: '*'
+
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
@@ -3166,6 +3176,11 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   react-refresh@0.14.2: {}
+
+  react-zoom-pan-pinch@3.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   react@18.3.1:
     dependencies:

@@ -2,12 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { authTables } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
-export const oklchSchema = v.object({
-  l: v.number(),
-  c: v.number(),
-  h: v.number(),
-});
-
 const schema = defineSchema({
   ...authTables,
   // core
@@ -57,15 +51,15 @@ const schema = defineSchema({
   // place
   placeState: defineTable({
     eventId: v.id("events"),
-    colorOptions: v.array(oklchSchema),
-    colors: v.array(v.array(oklchSchema)),
+    colorOptions: v.array(v.string()),
+    colors: v.array(v.array(v.string())),
   }).index("by_eventId", ["eventId"]),
   placeCommits: defineTable({
     eventId: v.id("events"),
     userId: v.id("users"),
     x: v.number(),
     y: v.number(),
-    color: oklchSchema,
+    color: v.string(),
   }).index("by_eventId_userId", ["eventId", "userId"]),
 });
 

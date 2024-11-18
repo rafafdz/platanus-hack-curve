@@ -25,14 +25,8 @@ function RouteComponent() {
         slug,
         endsAt: new Date(endsAt).getTime(),
         place: {
-          defaultColor: { l: 0, c: 0, h: 0 },
-          colorOptions: [
-            { l: 0, c: 0, h: 0 },
-            { l: 100, c: 0, h: 0 },
-            { l: 50, c: 0, h: 0 },
-            { l: 50, c: 50, h: 0 },
-            { l: 50, c: 50, h: 180 },
-          ],
+          defaultColor: "d8d8d8",
+          colorOptions: ["#d8d8d8", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"],
           width: 110,
           height: 48,
         },

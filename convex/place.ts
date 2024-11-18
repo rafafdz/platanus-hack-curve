@@ -1,21 +1,16 @@
 import { ConvexError, v } from "convex/values";
 import { Id } from "./_generated/dataModel";
-import { internalMutation, MutationCtx, query } from "./_generated/server";
-import { oklchSchema } from "./schema";
+import { internalMutation, mutation, MutationCtx, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { checkIfIsEventAdmin } from "./admin/events";
 
-type Oklch = {
-  l: number;
-  c: number;
-  h: number;
-};
+const millisecondsRateLimit = 1000 * 30;
 
 type PlaceOptions = {
   width: number;
   height: number;
-  colorOptions: Oklch[];
-  defaultColor: Oklch;
+  colorOptions: string[];
+  defaultColor: string;
 };
 
 export async function createPlace(
@@ -34,12 +29,16 @@ export async function createPlace(
   });
 }
 
+function isValidRGB(color: string) {
+  return /^#[0-9a-f]{6}$/i.test(color);
+}
+
 export const createOrReset = internalMutation({
   args: {
     eventId: v.id("events"),
     place: v.object({
-      defaultColor: v.object({ l: v.number(), c: v.number(), h: v.number() }),
-      colorOptions: v.array(v.object({ l: v.number(), c: v.number(), h: v.number() })),
+      defaultColor: v.string(),
+      colorOptions: v.array(v.string()),
       width: v.number(),
       height: v.number(),
     }),
@@ -50,18 +49,23 @@ export const createOrReset = internalMutation({
       .withIndex("by_eventId", (q) => q.eq("eventId", eventId))
       .unique();
 
+    if (!isValidRGB(place.defaultColor)) throw new ConvexError("Invalid default color");
+    for (const color of place.colorOptions) {
+      if (!isValidRGB(color)) throw new ConvexError("Invalid color option");
+    }
+
     if (existingPlace) await ctx.db.delete(existingPlace._id);
     await createPlace(ctx, eventId, place);
   },
 });
 
-export const updateColor = internalMutation({
+export const updateColor = mutation({
   args: {
     eventId: v.id("events"),
     cell: v.object({
       x: v.number(),
       y: v.number(),
-      color: oklchSchema,
+      color: v.string(),
     }),
   },
   handler: async (ctx, { eventId, cell }) => {
@@ -79,7 +83,7 @@ export const updateColor = internalMutation({
       throw new ConvexError("Out of bounds");
     }
 
-    if (!place.colorOptions.some((c) => c.l === cell.color.l && c.c === cell.color.c && c.h === cell.color.h)) {
+    if (!place.colorOptions.some((c) => c === cell.color)) {
       throw new ConvexError("Invalid color");
     }
 
@@ -91,7 +95,7 @@ export const updateColor = internalMutation({
         .order("desc")
         .first();
 
-      if (lastCommit && Date.now() - lastCommit._creationTime < 60000) {
+      if (lastCommit && Date.now() - lastCommit._creationTime < millisecondsRateLimit) {
         throw new ConvexError({ code: 429, message: "Rate limited" });
       }
     }
@@ -136,10 +140,16 @@ export const getLastPlacedCommitBySelf = query({
 
     if (!event) throw new ConvexError({ code: 404, message: "Event not found" });
 
-    return ctx.db
+    const isEventAdmin = await checkIfIsEventAdmin(ctx, event._id);
+
+    const lastCommit = await ctx.db
       .query("placeCommits")
       .withIndex("by_eventId_userId", (q) => q.eq("eventId", event._id).eq("userId", userId))
       .order("desc")
       .first();
+
+    const nextPlacementAfter = !lastCommit || isEventAdmin ? 0 : lastCommit._creationTime + millisecondsRateLimit;
+
+    return { lastCommit, isEventAdmin, nextPlacementAfter };
   },
 });

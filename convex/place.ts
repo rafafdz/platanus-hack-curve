@@ -25,7 +25,7 @@ export async function createPlace(
 ) {
   if (height < 1 || width < 1) throw new ConvexError("Invalid dimensions");
   if (colorOptions.length === 0) throw new ConvexError("No color options provided");
-  if (width * height > 5000) throw new ConvexError("Too many pixels");
+  if (width * height > 6000) throw new ConvexError("Too many pixels");
 
   await ctx.db.insert("placeState", {
     eventId,

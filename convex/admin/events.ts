@@ -21,7 +21,7 @@ export async function assertEventAuthorization(ctx: QueryCtx | MutationCtx, even
 
   const eventAdmin = await ctx.db
     .query("eventAdmins")
-    .withIndex("by_userId_eventId", (q) => q.eq("eventId", eventId).eq("userId", userId))
+    .withIndex("by_eventId_userId", (q) => q.eq("eventId", eventId).eq("userId", userId))
     .unique();
 
   if (!eventAdmin) throw new ConvexError({ code: 403, message: "Not found" });

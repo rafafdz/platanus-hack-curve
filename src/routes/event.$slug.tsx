@@ -282,7 +282,6 @@ function Announcement() {
     return () => clearInterval(interval);
   }, []);
 
-  console.log({ currentTime, startsAT: announcements[0].startsAt, endsAt: announcements[0].endsAt });
   const current = announcements.find(
     (announcement) => announcement.startsAt <= currentTime && currentTime < announcement.endsAt
   );
@@ -306,7 +305,6 @@ function RPlace() {
   const { data: place } = useSuspenseQuery(convexQuery(api.place.get, { eventSlug: slug }));
   const { data: lastCommit } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
 
-  console.log(place.colors.length, place.colors[0].length);
   return (
     <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col">
       {place.colors.map((colorsRow, y) => (

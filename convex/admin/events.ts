@@ -9,7 +9,7 @@ export async function checkIfIsEventAdmin(ctx: QueryCtx, eventId: Id<"events">) 
 
   const eventAdmin = await ctx.db
     .query("eventAdmins")
-    .withIndex("by_userId_eventId", (q) => q.eq("eventId", eventId).eq("userId", userId))
+    .withIndex("by_eventId_userId", (q) => q.eq("eventId", eventId).eq("userId", userId))
     .unique();
 
   return !!eventAdmin;

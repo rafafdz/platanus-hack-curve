@@ -19,7 +19,7 @@ const schema = defineSchema({
     eventId: v.id("events"),
     userId: v.id("users"),
   })
-    .index("by_userId_eventId", ["eventId", "userId"])
+    .index("by_eventId_userId", ["eventId", "userId"])
     .index("by_userId", ["userId"]),
 
   // info

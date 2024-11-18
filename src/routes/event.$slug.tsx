@@ -3,10 +3,9 @@ import { queryClient } from "../client";
 import { convexQuery } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Marquee from "react-fast-marquee";
 
-import { RPlace } from "../components/rplace";
 import { cva } from "cva";
 import { FunctionReturnType } from "convex/server";
 
@@ -25,17 +24,24 @@ function RouteComponent() {
   return (
     <div className="grid grid-cols-[2fr_5fr] grid-rows-[1fr_min-content] h-full overflow-clip p-2 gap-2">
       <div className="row-span-2 flex flex-col justify-between">
-        <div>
+        <div className="flex flex-col gap-2">
           <GoToAdmin />
         </div>
         <div className="flex flex-col gap-2">
           <Activities />
+          <div>Música actual</div>
           <TimeLeft />
+          <CurrentUrl />
         </div>
       </div>
-      <RPlace />
-      <div>
-        <PushEvents />
+      <Suspense fallback={<RPlaceLoading />}>
+        <RPlace />
+      </Suspense>
+      <div className="flex flex-col gap-1">
+        <div className="flex gap-1">
+          <div className="w-48 shrink-0">Equipo actual</div>
+          <PushEvents />
+        </div>
         <Announcement />
       </div>
     </div>
@@ -78,6 +84,18 @@ function GoToAdmin() {
   }
 
   return null;
+}
+
+function CurrentUrl() {
+  const { slug } = Route.useParams();
+  const url = new URL(window.location.href);
+  return (
+    <div className="bg-base-800 rounded-sm p-2 text-center text-sm">
+      <span className="text-base-50">{url.host}</span>
+      <span className="text-base-300">/event/</span>
+      <span className="text-primary-500">{slug}</span>
+    </div>
+  );
 }
 
 const activitiesStyles = cva({
@@ -173,7 +191,7 @@ function TimeLeft() {
   }, [event.endsAt]);
 
   return (
-    <div className="bg-base-900 flex justify-center flex-col items-center p-4 rounded-sm">
+    <div className="bg-base-900 flex justify-center flex-col items-center p-2 rounded-sm leading-none">
       {timeLeft < 0 ? (
         <>Ended</>
       ) : (
@@ -207,7 +225,7 @@ function PushEvents() {
     () =>
       splitPushEvents({
         data: pushEvents,
-        bins: 4,
+        bins: 5,
         by: (event) => event.timestamp,
       }),
     [pushEvents]
@@ -272,8 +290,37 @@ function Announcement() {
   if (!current) return null;
 
   return (
-    <Marquee pauseOnHover autoFill speed={40}>
-      <div className="mr-8 mt-2">{current.content}</div>
+    <Marquee pauseOnHover autoFill speed={40} className="py-2 leading-tight">
+      <div className="mr-8">{current.content}</div>
     </Marquee>
+  );
+}
+
+function RPlaceLoading() {
+  return (
+    <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col">Cargando</div>
+  );
+}
+function RPlace() {
+  const { slug } = Route.useParams();
+  const { data: place } = useSuspenseQuery(convexQuery(api.place.get, { eventSlug: slug }));
+  const { data: lastCommit } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
+
+  console.log(place.colors.length, place.colors[0].length);
+  return (
+    <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col">
+      {place.colors.map((colorsRow, y) => (
+        <div key={y} className="flex flex-row *:w-[8px] *:h-[8px]">
+          {colorsRow.map((color, x) => (
+            <div
+              key={`${x}-${y}`}
+              style={{
+                backgroundColor: `oklch(${color.l} ${color.c} ${color.h})`,
+              }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }

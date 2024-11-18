@@ -10,6 +10,7 @@ export const listByEventSlug = query({
       .query("events")
       .withIndex("by_slug", (q) => q.eq("slug", eventSlug))
       .unique();
+
     if (!event) throw new ConvexError({ status: 404, message: "Event not found" });
 
     const activities = await ctx.db

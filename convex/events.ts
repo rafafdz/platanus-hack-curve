@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { oklchSchema } from "./schema";
+import { createPlace } from "./place";
 
 export const getBySlug = query({
   args: { slug: v.string() },
@@ -30,8 +32,14 @@ export const create = mutation({
     name: v.string(),
     slug: v.string(),
     endsAt: v.number(),
+    place: v.object({
+      defaultColor: oklchSchema,
+      colorOptions: v.array(oklchSchema),
+      width: v.number(),
+      height: v.number(),
+    }),
   },
-  handler: async (ctx, { name, slug, endsAt }) => {
+  handler: async (ctx, { name, slug, endsAt, place }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new ConvexError({ status: 401, message: "Unauthorized" });
     if (/[^a-z0-9-]/.test(slug)) throw new ConvexError({ status: 400, message: "Invalid slug" });
@@ -47,8 +55,10 @@ export const create = mutation({
       name,
       slug,
       endsAt,
+      currentActivity: "place",
       isPublic: process.env.DEFAULT_EVENT_VISIBILITY === "public",
     });
     await ctx.db.insert("eventAdmins", { eventId, userId });
+    await createPlace(ctx, eventId, place);
   },
 });

@@ -24,6 +24,7 @@ import type * as events from "../events.js";
 import type * as githubPushEvents from "../githubPushEvents.js";
 import type * as http from "../http.js";
 import type * as integrations_github from "../integrations/github.js";
+import type * as place from "../place.js";
 import type * as seed_githubPushEvents from "../seed/githubPushEvents.js";
 import type * as users from "../users.js";
 import type * as version from "../version.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   githubPushEvents: typeof githubPushEvents;
   http: typeof http;
   "integrations/github": typeof integrations_github;
+  place: typeof place;
   "seed/githubPushEvents": typeof seed_githubPushEvents;
   users: typeof users;
   version: typeof version;

@@ -3,13 +3,25 @@ import { mutation, MutationCtx, query, QueryCtx } from "../_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "../_generated/dataModel";
 
-export async function checkEventAuthorization(ctx: QueryCtx | MutationCtx, id: Id<"events">) {
+export async function checkIfIsEventAdmin(ctx: QueryCtx, eventId: Id<"events">) {
+  const userId = await getAuthUserId(ctx);
+  if (!userId) return false;
+
+  const eventAdmin = await ctx.db
+    .query("eventAdmins")
+    .withIndex("by_userId_eventId", (q) => q.eq("eventId", eventId).eq("userId", userId))
+    .unique();
+
+  return !!eventAdmin;
+}
+
+export async function assertEventAuthorization(ctx: QueryCtx | MutationCtx, eventId: Id<"events">) {
   const userId = await getAuthUserId(ctx);
   if (!userId) throw new ConvexError({ code: 401, message: "Not authenticated" });
 
   const eventAdmin = await ctx.db
     .query("eventAdmins")
-    .withIndex("by_eventId", (q) => q.eq("eventId", id))
+    .withIndex("by_userId_eventId", (q) => q.eq("eventId", eventId).eq("userId", userId))
     .unique();
 
   if (!eventAdmin) throw new ConvexError({ code: 403, message: "Not found" });
@@ -40,7 +52,7 @@ export const list = query({
 export const get = query({
   args: { id: v.id("events") },
   handler: async (ctx, { id }) => {
-    await checkEventAuthorization(ctx, id);
+    await assertEventAuthorization(ctx, id);
     const event = await ctx.db.get(id);
     if (!event) throw new ConvexError({ code: 404, message: "Not found" });
     return event;
@@ -56,7 +68,7 @@ export const patch = mutation({
     }),
   },
   handler: async (ctx, { id, event: eventData }) => {
-    await checkEventAuthorization(ctx, id);
+    await assertEventAuthorization(ctx, id);
     return ctx.db.patch(id, eventData);
   },
 });
@@ -64,7 +76,7 @@ export const patch = mutation({
 const _delete = mutation({
   args: { id: v.id("events") },
   handler: async (ctx, { id }) => {
-    await checkEventAuthorization(ctx, id);
+    await assertEventAuthorization(ctx, id);
     return ctx.db.delete(id);
   },
 });

@@ -1,6 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation } from "../_generated/server";
-import { checkEventAuthorization } from "./events";
+import { assertEventAuthorization } from "./events";
 
 export const create = mutation({
   args: {
@@ -12,7 +12,7 @@ export const create = mutation({
     }),
   },
   handler: async (ctx, { eventId, activity }) => {
-    await checkEventAuthorization(ctx, eventId);
+    await assertEventAuthorization(ctx, eventId);
     if (activity.endsAt < activity.startsAt) {
       throw new ConvexError({ code: 400, message: "EndsAt must be after StartsAt" });
     }
@@ -28,7 +28,7 @@ const _delete = mutation({
   handler: async (ctx, { activityId }) => {
     const activity = await ctx.db.get(activityId);
     if (!activity) throw new ConvexError({ code: 404, message: "Not found" });
-    await checkEventAuthorization(ctx, activity.eventId);
+    await assertEventAuthorization(ctx, activity.eventId);
     return ctx.db.delete(activityId);
   },
 });

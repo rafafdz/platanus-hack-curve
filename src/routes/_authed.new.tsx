@@ -20,7 +20,23 @@ function RouteComponent() {
   const createMutation = useMutation({
     mutationFn: async (event: FormEvent) => {
       event.preventDefault();
-      await create({ name, slug, endsAt: new Date(endsAt).getTime() });
+      await create({
+        name,
+        slug,
+        endsAt: new Date(endsAt).getTime(),
+        place: {
+          defaultColor: { l: 0, c: 0, h: 0 },
+          colorOptions: [
+            { l: 0, c: 0, h: 0 },
+            { l: 100, c: 0, h: 0 },
+            { l: 50, c: 0, h: 0 },
+            { l: 50, c: 50, h: 0 },
+            { l: 50, c: 50, h: 180 },
+          ],
+          width: 110,
+          height: 48,
+        },
+      });
     },
     onSuccess: async () => {
       await navigate({ to: "/" });

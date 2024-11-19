@@ -26,29 +26,80 @@ export const Route = createFileRoute("/event/$slug")({
   component: RouteComponent,
 });
 
+const hiddenOnFullScreenStyles = cva({
+  base: "",
+  variants: {
+    fullscreen: {
+      true: "sm:hidden",
+      false: "",
+    },
+  },
+  defaultVariants: {
+    fullscreen: false,
+  },
+});
+
+const gridStyles = cva({
+  base: "grid h-full overflow-clip p-2 gap-2",
+  variants: {
+    fullscreen: {
+      true: "",
+      false: "sm:grid-cols-[1fr_2fr] sm:grid-rows-[1fr_min-content_min-content]",
+    },
+  },
+  defaultVariants: {
+    fullscreen: false,
+  },
+});
+
+const activityContainerStyles = cva({
+  base: "sm:h-full w-ful h-36",
+  variants: {
+    fullscreen: {
+      true: "",
+      false: "row-start-2 sm:row-start-auto",
+    },
+  },
+  defaultVariants: {
+    fullscreen: false,
+  },
+});
+
 function RouteComponent() {
+  const { slug } = Route.useParams();
+  const { data: event } = useSuspenseQuery(convexQuery(api.events.getBySlug, { slug }));
+  const fullscreen = event.fullScreenActivity;
+
   return (
-    <div className="grid grid-cols-[1fr_2fr] grid-rows-[1fr_min-content_min-content] h-full overflow-clip p-2 gap-2">
-      <div className="flex flex-col justify-between">
-        <div className="flex flex-col gap-2">
+    <div className={gridStyles({ fullscreen })}>
+      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col justify-between" })}>
+        <div className="sm:flex flex-col gap-2">
           <GoToAdmin />
         </div>
         <div className="flex flex-col gap-2">
           <Activities />
         </div>
       </div>
-      <div className="row-start-2 flex flex-col gap-2 h-full">
+
+      <div
+        className={hiddenOnFullScreenStyles({
+          fullscreen,
+          className: "sm:row-start-2 flex flex-col gap-2 h-full row-start-1 sm:row-auto",
+        })}
+      >
         <CurrentSong />
         <TimeLeft />
       </div>
-      <DisplayActivity />
-      <div className="flex flex-col gap-1">
-        <div className="flex gap-2">
-          <div className="w-48 shrink-0 bg-base-900 rounded-sm flex justify-center items-center">Equipo actual</div>
-          <PushEvents />
-        </div>
+
+      <div className={activityContainerStyles({ fullscreen })}>
+        <DisplayActivity />
       </div>
-      <div className="col-span-2">
+
+      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col gap-1" })}>
+        <PushEvents />
+      </div>
+
+      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "sm:col-span-2" })}>
         <AnnouncementOrURL />
       </div>
     </div>
@@ -220,6 +271,7 @@ function TimeLeft() {
 function DisplayActivity() {
   const { slug } = Route.useParams();
   const { data: event } = useSuspenseQuery(convexQuery(api.events.getBySlug, { slug }));
+  const { data: team } = useSuspenseQuery(convexQuery(api.teams.getCurrent, { eventSlug: slug }));
 
   if (event.iframe && event.currentActivity === "iframe") {
     return (
@@ -231,6 +283,10 @@ function DisplayActivity() {
         allowFullScreen
       ></iframe>
     );
+  }
+
+  if (team && event.currentActivity === "teams") {
+    return <Team team={team} />;
   }
 
   return (
@@ -344,7 +400,9 @@ function AnnouncementOrURL() {
 
 function PlaceLoading() {
   return (
-    <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col">Cargando</div>
+    <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col h-full">
+      Cargando
+    </div>
   );
 }
 function Place() {
@@ -394,7 +452,7 @@ function Place() {
 
   // https://github.com/BetterTyped/react-zoom-pan-pinch/blob/master/src/stories/examples/image-responsive/example.tsx
   return (
-    <div className="flex flex-col gap-2" ref={containerRef}>
+    <div className="flex flex-col gap-2 h-full" ref={containerRef}>
       <div className="flex justify-between">
         <div>
           <RadioGroup.Root
@@ -479,4 +537,40 @@ function TimeToWait({ time }: { time: number }) {
   if (timeLeft <= 0) return null;
 
   return <div className="text-base-400 text-center">Next color in {formatTimeLeft(timeLeft)}</div>;
+}
+import { renderSVG } from "uqr";
+function QR({ value, className }: { value: string; className?: string }) {
+  const divRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!divRef.current) return;
+    const svg = renderSVG(value, { whiteColor: "transparent", blackColor: "currentColor" });
+    divRef.current.innerHTML = svg;
+  }, [value]);
+
+  return <div ref={divRef} className={className} />;
+}
+function Team({ team }: { team: { name: string; url: string; members: { githubUser: string }[] } }) {
+  return (
+    <div className="flex gap-12 items-center justify-center h-full">
+      <div>
+        <QR value={team.url} className="size-48" />
+      </div>
+      <div className="flex flex-col justify-center">
+        <div className="text-4xl mb-2">{team.name}</div>
+        <ul className="flex flex-col gap-2">
+          {team.members.map((member) => (
+            <li key={member.githubUser} className="flex items-center gap-2">
+              <img
+                src={`https://github.com/${member.githubUser}.png`}
+                alt={member.githubUser}
+                className="w-8 h-8 rounded-xs"
+              />
+              {member.githubUser}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }

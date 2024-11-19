@@ -19,6 +19,7 @@ import type * as admin_announcements from "../admin/announcements.js";
 import type * as admin_events from "../admin/events.js";
 import type * as admin_github from "../admin/github.js";
 import type * as admin_spotify from "../admin/spotify.js";
+import type * as admin_teams from "../admin/teams.js";
 import type * as announcements from "../announcements.js";
 import type * as auth from "../auth.js";
 import type * as events from "../events.js";
@@ -29,6 +30,7 @@ import type * as integrations_spotify from "../integrations/spotify.js";
 import type * as place from "../place.js";
 import type * as seed_githubPushEvents from "../seed/githubPushEvents.js";
 import type * as spotify from "../spotify.js";
+import type * as teams from "../teams.js";
 import type * as users from "../users.js";
 import type * as version from "../version.js";
 
@@ -47,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   "admin/events": typeof admin_events;
   "admin/github": typeof admin_github;
   "admin/spotify": typeof admin_spotify;
+  "admin/teams": typeof admin_teams;
   announcements: typeof announcements;
   auth: typeof auth;
   events: typeof events;
@@ -57,6 +60,7 @@ declare const fullApi: ApiFromModules<{
   place: typeof place;
   "seed/githubPushEvents": typeof seed_githubPushEvents;
   spotify: typeof spotify;
+  teams: typeof teams;
   users: typeof users;
   version: typeof version;
 }>;

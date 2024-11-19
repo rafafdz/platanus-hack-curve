@@ -10,8 +10,10 @@ const schema = defineSchema({
     slug: v.string(),
     endsAt: v.number(),
     isPublic: v.boolean(),
+    fullScreenActivity: v.optional(v.boolean()),
     iframe: v.optional(v.string()),
-    currentActivity: v.union(v.literal("iframe"), v.literal("place")),
+    teamToShowId: v.optional(v.id("teams")),
+    currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams")),
   })
     .index("by_slug", ["slug"])
     .index("by_isPublic", ["isPublic"]),
@@ -85,8 +87,12 @@ const schema = defineSchema({
   teams: defineTable({
     eventId: v.id("events"),
     name: v.string(),
-    href: v.string(),
-    color: v.string(),
+    url: v.string(),
+    members: v.array(
+      v.object({
+        githubUser: v.string(),
+      })
+    ),
   }).index("by_eventId", ["eventId"]),
 });
 

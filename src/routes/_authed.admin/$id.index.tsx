@@ -8,6 +8,7 @@ import { Button } from "../../components/admin/button";
 import { Copiable } from "../../components/admin/copiable";
 import { queryClient } from "../../client";
 import * as RadioGroup from "@radix-ui/react-radio-group";
+import { Id } from "../../../convex/_generated/dataModel";
 
 const siteHttpUrl = import.meta.env.VITE_CONVEX_URL.replace(".convex.cloud", ".convex.site");
 
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/_authed/admin/$id/")({
     await Promise.all([
       queryClient.ensureQueryData(convexQuery(api.admin.events.get, { id })),
       queryClient.ensureQueryData(convexQuery(api.admin.github.getConfig, { id })),
+      queryClient.ensureQueryData(convexQuery(api.admin.spotify.getConnection, { id })),
+      queryClient.ensureQueryData(convexQuery(api.admin.teams.list, { eventId: id })),
     ]);
   },
   component: RouteComponent,
@@ -39,19 +42,34 @@ function RouteComponent() {
 function GeneralConfig() {
   const { id } = Route.useParams();
   const { data: config } = useSuspenseQuery(convexQuery(api.admin.events.get, { id }));
+  const { data: teams } = useSuspenseQuery(convexQuery(api.admin.teams.list, { eventId: id }));
+
   const [name, setName] = useState(config?.name);
   const [endsAt, setEndsAt] = useState(new Date(config?.endsAt).toISOString().slice(0, 16));
   const [iframe, setIframe] = useState(config?.iframe);
   const [activity, setCurrentActivity] = useState(config?.currentActivity);
+  const [fullscreen, setFullscreen] = useState(config?.fullScreenActivity);
+  const [team, setTeam] = useState(teams[0]._id);
 
   const update = useConvexMutation(api.admin.events.patch);
 
   const updateMutation = useMutation({
     mutationFn: async (event: FormEvent) => {
       event.preventDefault();
-      await update({ id, event: { name, endsAt: new Date(endsAt).getTime(), currentActivity: activity, iframe } });
+      await update({
+        id,
+        event: {
+          name,
+          endsAt: new Date(endsAt).getTime(),
+          currentActivity: activity,
+          iframe,
+          fullScreenActivity: fullscreen,
+          teamToShowId: team,
+        },
+      });
     },
   });
+
   return (
     <>
       <form onSubmit={updateMutation.mutate}>
@@ -81,8 +99,24 @@ function GeneralConfig() {
           />
         </div>
         <div>
+          <legend>Equipo que se mostrará</legend>
+          <RadioGroup.Root value={team} onValueChange={(value) => setTeam(value as Id<"teams">)}>
+            {teams.map((team) => (
+              <RadioGroup.Item key={team._id} value={team._id} className="block">
+                <span className="data-[state=checked]:bg-base-800 inline-block w-2 mr-2 bg-base-700">
+                  <RadioGroup.Indicator>×</RadioGroup.Indicator>
+                </span>
+                {team.name}
+              </RadioGroup.Item>
+            ))}
+          </RadioGroup.Root>
+        </div>
+        <div>
           <legend>Actividad Actual</legend>
-          <RadioGroup.Root value={activity} onValueChange={(value) => setCurrentActivity(value as "place" | "iframe")}>
+          <RadioGroup.Root
+            value={activity}
+            onValueChange={(value) => setCurrentActivity(value as "place" | "iframe" | "teams")}
+          >
             <RadioGroup.Item value="place" className="block">
               <span className="data-[state=checked]:bg-base-800 inline-block w-2 mr-2 bg-base-700">
                 <RadioGroup.Indicator>×</RadioGroup.Indicator>
@@ -95,11 +129,28 @@ function GeneralConfig() {
               </span>
               Iframe
             </RadioGroup.Item>
+            <RadioGroup.Item value="teams" className="block">
+              <span className="data-[state=checked]:bg-base-800 inline-block w-2 mr-2 bg-base-700">
+                <RadioGroup.Indicator>×</RadioGroup.Indicator>
+              </span>
+              Equipos
+            </RadioGroup.Item>
           </RadioGroup.Root>
+        </div>
+        <div>
+          <Label htmlFor="new-fullscreen">Dejarlo en pantalla completa:</Label>{" "}
+          <input
+            type="checkbox"
+            id="new-fullscreen"
+            checked={fullscreen}
+            onChange={(e) => setFullscreen(e.target.checked)}
+          />
         </div>
         <Button type="submit" disabled={updateMutation.isPending}>
           Guardar
         </Button>
+        {updateMutation.isError && <div className="text-red-600">Error: {updateMutation.error.message}</div>}
+        {updateMutation.isSuccess && <div className="text-green-600">Guardado</div>}
       </form>
     </>
   );

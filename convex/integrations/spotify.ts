@@ -203,7 +203,8 @@ export const refreshState = internalAction({
       });
 
       if (!tokenResponse.ok) {
-        return await ctx.runMutation(internal.integrations.spotify.deleteConnection, { eventId });
+        await ctx.runMutation(internal.integrations.spotify.deleteConnection, { eventId });
+        return;
       }
 
       const { access_token: accessToken, refresh_token: refreshToken } = await tokenResponse.json();
@@ -227,7 +228,8 @@ export const refreshState = internalAction({
     });
 
     if (!response.ok) {
-      return await ctx.runMutation(internal.integrations.spotify.deleteConnection, { eventId });
+      await ctx.runMutation(internal.integrations.spotify.deleteConnection, { eventId });
+      return;
     }
 
     const text = await response.text();

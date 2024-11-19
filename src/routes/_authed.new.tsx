@@ -27,8 +27,8 @@ function RouteComponent() {
         place: {
           defaultColor: "d8d8d8",
           colorOptions: ["#d8d8d8", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"],
-          width: 110,
-          height: 48,
+          width: 100,
+          height: 40,
         },
       });
     },

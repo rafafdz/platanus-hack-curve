@@ -49,7 +49,7 @@ function GeneralConfig() {
   const [iframe, setIframe] = useState(config?.iframe);
   const [activity, setCurrentActivity] = useState(config?.currentActivity);
   const [fullscreen, setFullscreen] = useState(config?.fullScreenActivity);
-  const [team, setTeam] = useState(teams[0]._id);
+  const [team, setTeam] = useState(teams.at(0)?._id);
 
   const update = useConvexMutation(api.admin.events.patch);
 

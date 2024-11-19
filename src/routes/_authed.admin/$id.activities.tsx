@@ -7,6 +7,7 @@ import { Input, Label } from "../../components/admin/forms";
 import { FormEvent, useState } from "react";
 import { Button } from "../../components/admin/button";
 import { Id } from "../../../convex/_generated/dataModel";
+import { dateToHTMLDateTimeInput } from "./$id.announcements";
 
 export const Route = createFileRoute("/_authed/admin/$id/activities")({
   loader: async ({ params: { id } }) => {
@@ -44,8 +45,8 @@ function RouteComponent() {
   });
 
   const [name, setName] = useState("");
-  const [startAt, setStartAt] = useState("");
-  const [endAt, setEndAt] = useState("");
+  const [startAt, setStartAt] = useState(dateToHTMLDateTimeInput(new Date()));
+  const [endAt, setEndAt] = useState(dateToHTMLDateTimeInput(new Date(Date.now() + 1000 * 60 * 30)));
 
   return (
     <div>

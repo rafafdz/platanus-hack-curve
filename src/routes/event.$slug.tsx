@@ -17,6 +17,9 @@ export const Route = createFileRoute("/event/$slug")({
     return Promise.all([
       queryClient.ensureQueryData(convexQuery(api.events.getBySlug, { slug })),
       queryClient.ensureQueryData(convexQuery(api.activities.listByEventSlug, { eventSlug: slug })),
+      queryClient.ensureQueryData(convexQuery(api.githubPushEvents.list, { eventSlug: slug })),
+      queryClient.ensureQueryData(convexQuery(api.announcements.getCurrentByEventSlug, { eventSlug: slug })),
+      queryClient.ensureQueryData(convexQuery(api.spotify.currentTrack, { eventSlug: slug })),
     ]);
   },
   component: RouteComponent,
@@ -24,7 +27,7 @@ export const Route = createFileRoute("/event/$slug")({
 
 function RouteComponent() {
   return (
-    <div className="grid grid-cols-[2fr_5fr] grid-rows-[1fr_min-content] h-full overflow-clip p-2 gap-2">
+    <div className="grid grid-cols-[1fr_2fr] grid-rows-[1fr_min-content_min-content] h-full overflow-clip p-2 gap-2">
       <div className="flex flex-col justify-between">
         <div className="flex flex-col gap-2">
           <GoToAdmin />
@@ -34,19 +37,18 @@ function RouteComponent() {
         </div>
       </div>
       <div className="row-start-2 flex flex-col gap-2 h-full">
-        <div className="bg-base-900 flex justify-center items-center h-11">Música actual</div>
+        <CurrentSong />
         <TimeLeft />
-        <CurrentUrl />
       </div>
-      <Suspense fallback={<PlaceLoading />}>
-        <Place />
-      </Suspense>
+      <DisplayActivity />
       <div className="flex flex-col gap-1">
         <div className="flex gap-2">
           <div className="w-48 shrink-0 bg-base-900 rounded-sm flex justify-center items-center">Equipo actual</div>
           <PushEvents />
         </div>
-        <Announcement />
+      </div>
+      <div className="col-span-2">
+        <AnnouncementOrURL />
       </div>
     </div>
   );
@@ -88,18 +90,6 @@ function GoToAdmin() {
   }
 
   return null;
-}
-
-function CurrentUrl() {
-  const { slug } = Route.useParams();
-  const url = new URL(window.location.href);
-  return (
-    <div className="text-center text-sm">
-      <span className="text-base-50">{url.host}</span>
-      <span className="text-base-300">/event/</span>
-      <span className="text-primary-500">{slug}</span>
-    </div>
-  );
 }
 
 const activitiesStyles = cva({
@@ -181,6 +171,23 @@ function formatTimeLeft(timeLeft: number) {
   return `${hours}:${minutes}:${secs}`;
 }
 
+function CurrentSong() {
+  const { slug } = Route.useParams();
+  const { data: track } = useSuspenseQuery(convexQuery(api.spotify.currentTrack, { eventSlug: slug }));
+
+  if (!track) return null;
+
+  return (
+    <div className="flex gap-2 items-center bg-base-900 rounded-sm p-2">
+      <img src={track.image} alt={track.name} className="w-12 h-12 rounded-md shrink-0" />
+      <div className="flex flex-col gap-1">
+        <div className="font-bold text-xl leading-tight text-base-200 line-clamp-1">{track.name}</div>
+        <div className="text-base-300 text-ellipsis line-clamp-1">{track.artist}</div>
+      </div>
+    </div>
+  );
+}
+
 function TimeLeft() {
   const { slug } = Route.useParams();
   const { data: event } = useSuspenseQuery(convexQuery(api.events.getBySlug, { slug }));
@@ -195,7 +202,7 @@ function TimeLeft() {
   }, [event.endsAt]);
 
   return (
-    <div className="bg-base-900 flex justify-center flex-col items-center p-2 rounded-sm leading-none">
+    <div className="bg-base-900 flex justify-center flex-col items-center p-2 rounded-sm leading-none grow">
       {timeLeft < 0 ? (
         <>Ended</>
       ) : (
@@ -205,6 +212,29 @@ function TimeLeft() {
         </>
       )}
     </div>
+  );
+}
+
+function DisplayActivity() {
+  const { slug } = Route.useParams();
+  const { data: event } = useSuspenseQuery(convexQuery(api.events.getBySlug, { slug }));
+
+  if (event.iframe && event.currentActivity === "iframe") {
+    return (
+      <iframe
+        src={event.iframe}
+        className="bg-base-900 rounded-sm w-full h-full"
+        allow="autoplay;fullscreen;encrypted-media"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      ></iframe>
+    );
+  }
+
+  return (
+    <Suspense fallback={<PlaceLoading />}>
+      <Place />
+    </Suspense>
   );
 }
 
@@ -274,11 +304,12 @@ declare module "react" {
   }
 }
 
-function Announcement() {
+function AnnouncementOrURL() {
   const { slug } = Route.useParams();
   const { data: announcements } = useSuspenseQuery(
     convexQuery(api.announcements.getCurrentByEventSlug, { eventSlug: slug })
   );
+  const url = new URL(window.location.href);
 
   const [currentTime, setCurrentTime] = useState(Date.now());
 
@@ -293,7 +324,14 @@ function Announcement() {
     (announcement) => announcement.startsAt <= currentTime && currentTime < announcement.endsAt
   );
 
-  if (!current) return null;
+  if (!current)
+    return (
+      <div className="text-center text-sm">
+        <span className="text-base-50">{url.host}</span>
+        <span className="text-base-300">/event/</span>
+        <span className="text-primary-500">{slug}</span>
+      </div>
+    );
 
   return (
     <Marquee pauseOnHover autoFill speed={40} className="leading-tight">
@@ -352,7 +390,6 @@ function Place() {
     },
   });
 
-  console.log(nextPlacementAfter);
   // https://github.com/BetterTyped/react-zoom-pan-pinch/blob/master/src/stories/examples/image-responsive/example.tsx
   return (
     <div className="flex flex-col gap-2" ref={containerRef}>

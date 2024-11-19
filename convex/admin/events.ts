@@ -65,6 +65,8 @@ export const patch = mutation({
     event: v.object({
       name: v.string(),
       endsAt: v.number(),
+      iframe: v.optional(v.string()),
+      currentActivity: v.union(v.literal("iframe"), v.literal("place")),
     }),
   },
   handler: async (ctx, { id, event: eventData }) => {

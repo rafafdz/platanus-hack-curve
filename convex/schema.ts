@@ -61,6 +61,33 @@ const schema = defineSchema({
     y: v.number(),
     color: v.string(),
   }).index("by_eventId_userId", ["eventId", "userId"]),
+  // Spotify
+  spotifyConnections: defineTable({
+    eventId: v.id("events"),
+    accessToken: v.string(),
+    refreshToken: v.string(),
+    expiresAt: v.number(),
+    scheduledUpdateState: v.id("_scheduled_functions"),
+    name: v.string(),
+    image: v.object({ url: v.string() }),
+  }).index("by_eventId", ["eventId"]),
+  spotifyState: defineTable({
+    eventId: v.id("events"),
+    track: v.optional(
+      v.object({
+        name: v.string(),
+        artist: v.string(),
+        image: v.string(),
+      })
+    ),
+  }).index("by_eventId", ["eventId"]),
+  // teams
+  teams: defineTable({
+    eventId: v.id("events"),
+    name: v.string(),
+    href: v.string(),
+    color: v.string(),
+  }).index("by_eventId", ["eventId"]),
 });
 
 export default schema;

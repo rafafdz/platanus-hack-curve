@@ -8,6 +8,17 @@ import { Input, Label } from "../../components/admin/forms";
 import { Button } from "../../components/admin/button";
 import { queryClient } from "../../client";
 
+export function dateToHTMLDateTimeInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  // Combine into the correct format
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export const Route = createFileRoute("/_authed/admin/$id/announcements")({
   loader: async ({ params: { id } }) => {
     await queryClient.ensureQueryData(convexQuery(api.admin.announcements.list, { eventId: id }));
@@ -20,8 +31,8 @@ function RouteComponent() {
   const { data: announcements } = useSuspenseQuery(convexQuery(api.admin.announcements.list, { eventId: id }));
 
   const [content, setContent] = useState("");
-  const [from, setFrom] = useState(new Date().toISOString().slice(0, 16));
-  const [to, setTo] = useState(new Date(Date.now() + 1000 * 60 * 30).toISOString().slice(0, 16));
+  const [from, setFrom] = useState(dateToHTMLDateTimeInput(new Date()));
+  const [to, setTo] = useState(dateToHTMLDateTimeInput(new Date(Date.now() + 1000 * 60 * 30)));
 
   const createAnnouncement = useConvexMutation(api.admin.announcements.create);
   const createAnnouncementMutation = useMutation({

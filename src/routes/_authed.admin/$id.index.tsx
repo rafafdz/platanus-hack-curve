@@ -29,6 +29,9 @@ function RouteComponent() {
       <hr className="my-4 border-base-500" />
       <h2 className="font-bold">GitHub</h2>
       <GitHubConfig />
+      <hr className="my-4 border-base-500" />
+      <h2 className="font-bold">Spotify</h2>
+      <SpotifyConfig />
     </>
   );
 }
@@ -46,7 +49,7 @@ function GeneralConfig() {
   const updateMutation = useMutation({
     mutationFn: async (event: FormEvent) => {
       event.preventDefault();
-      await update({ id, event: { name, endsAt: new Date(endsAt).getTime() } });
+      await update({ id, event: { name, endsAt: new Date(endsAt).getTime(), currentActivity: activity, iframe } });
     },
   });
   return (
@@ -69,7 +72,13 @@ function GeneralConfig() {
         </div>
         <div>
           <Label htmlFor="new-iframe">Iframe de cuadro (optional):</Label>{" "}
-          <Input id="new-iframe" type="url" value={config?.iframe} onChange={(e) => setIframe(e.target.value)} />
+          <Input
+            id="new-iframe"
+            className="w-full"
+            type="url"
+            value={iframe}
+            onChange={(e) => setIframe(e.target.value)}
+          />
         </div>
         <div>
           <legend>Actividad Actual</legend>
@@ -88,7 +97,9 @@ function GeneralConfig() {
             </RadioGroup.Item>
           </RadioGroup.Root>
         </div>
-        <Button type="submit">Guardar</Button>
+        <Button type="submit" disabled={updateMutation.isPending}>
+          Guardar
+        </Button>
       </form>
     </>
   );
@@ -111,14 +122,86 @@ function GitHubConfig() {
           </div>
           <div>
             Secret: <Copiable text={config.secret} />
-            <Button variant="danger" className="ml-2" onClick={() => resetMutation.mutate({ id })}>
+            <Button
+              variant="danger"
+              className="ml-2"
+              disabled={resetMutation.isPending}
+              onClick={() => resetMutation.mutate({ id })}
+            >
               Reiniciar
             </Button>
           </div>
         </>
       ) : (
-        <Button onClick={() => resetMutation.mutate({ id })}>Activar</Button>
+        <Button disabled={resetMutation.isPending} onClick={() => resetMutation.mutate({ id })}>
+          Activar
+        </Button>
       )}
     </>
+  );
+}
+
+function SpotifyConfig() {
+  const { id } = Route.useParams();
+  const { data: connection } = useSuspenseQuery(convexQuery(api.admin.spotify.getConnection, { id }));
+  const url = new URL(siteHttpUrl);
+  url.pathname = "/integrations/spotify/auth";
+  url.searchParams.set("eventId", id);
+
+  const deleteConnection = useConvexMutation(api.admin.spotify.deleteConnection);
+  const deleteConnectionMutation = useMutation({
+    mutationFn: async () => {
+      await deleteConnection({ id });
+    },
+  });
+
+  if (!connection) {
+    return (
+      <a href={url.toString()} className="bg-base-200 text-base-900 hover:bg-base-100 px-4 leading-tight">
+        Autentificar
+      </a>
+    );
+  }
+
+  return (
+    <div>
+      {/* {JSON.stringify(connection)} */}
+      <div>
+        <div>Conectado como {connection.name}</div>
+        <div>
+          {connection.scheduledRefresh?.state.kind === "failed" ? (
+            <div className="text-red-600">
+              Hubo un error al actualizar el estado:{" "}
+              <span className="text-red-800">{connection.scheduledRefresh.state.error}</span>
+            </div>
+          ) : (
+            <div className="text-base-300">
+              Se actualizará el {new Date(connection.scheduledRefresh?.scheduledTime!).toLocaleString()}
+            </div>
+          )}
+        </div>
+        <div>
+          {connection?.state?.track ? (
+            <div>
+              Reproduciendo: {connection.state.track.name}de {connection.state.track.artist}
+            </div>
+          ) : (
+            <div>No hay música reproduciendo</div>
+          )}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          variant="danger"
+          disabled={deleteConnectionMutation.isPending}
+          onClick={() => deleteConnectionMutation.mutate()}
+        >
+          Desconectar
+        </Button>
+        <a href={url.toString()} className="bg-red-700 text-red-50 hover:bg-red-600 px-4 leading-tight">
+          Re-conectar
+        </a>
+      </div>
+    </div>
   );
 }

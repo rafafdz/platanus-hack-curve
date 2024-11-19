@@ -1,6 +1,6 @@
 import { createFileRoute, ErrorComponentProps, Link } from "@tanstack/react-router";
 import { queryClient } from "../client";
-import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { convexQuery, useConvexAuth, useConvexMutation } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -10,6 +10,7 @@ import * as RadioGroup from "@radix-ui/react-radio-group";
 
 import { cva } from "cva";
 import { FunctionReturnType } from "convex/server";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 export const Route = createFileRoute("/event/$slug")({
   errorComponent: ErrorComponent,
@@ -55,6 +56,7 @@ function RouteComponent() {
 }
 
 function ErrorComponent(props: ErrorComponentProps) {
+  // @ts-ignore
   if (props.error.status === 404) {
     return (
       <div>
@@ -347,11 +349,17 @@ function PlaceLoading() {
 }
 function Place() {
   const { slug } = Route.useParams();
-  const {
-    data: { nextPlacementAfter },
-  } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
-
+  const { data: commit } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
+  const { isAuthenticated } = useConvexAuth();
+  const { signIn } = useAuthActions();
   const { data: place } = useSuspenseQuery(convexQuery(api.place.get, { eventSlug: slug }));
+
+  const colorPixel = useConvexMutation(api.place.updateColor).withOptimisticUpdate((store, { cell, eventId }) => {
+    const place = store.getQuery(api.place.get, { eventSlug: slug });
+    if (!place) return;
+    place.colors[cell.y][cell.x] = cell.color;
+    store.setQuery(api.place.get, { eventSlug: slug }, place);
+  });
 
   const [selectedColor, setSelectedColor] = useState(place.colorOptions[0]);
 
@@ -373,20 +381,14 @@ function Place() {
 
   const scale = useMemo(() => {
     if (!containerSize.width || !containerSize.height) return 1;
-
     const scale = Math.min(containerSize.width / place.colors[0].length, containerSize.height / place.colors.length);
-    console.log(scale);
     return scale;
   }, [containerSize, place.colors]);
 
-  const colorPixel = useConvexMutation(api.place.updateColor);
-
   const colorPixelMutation = useMutation({
     mutationFn: async ({ x, y }: { x: number; y: number }) => {
-      await colorPixel({
-        eventId: place.eventId,
-        cell: { x, y, color: selectedColor },
-      });
+      if (!isAuthenticated) return await signIn("github", { redirectTo: window.location.href });
+      await colorPixel({ eventId: place.eventId, cell: { x, y, color: selectedColor } });
     },
   });
 
@@ -410,9 +412,7 @@ function Place() {
             ))}
           </RadioGroup.Root>
         </div>
-        <div>
-          <TimeToWait time={nextPlacementAfter} />
-        </div>
+        <div>{commit ? <TimeToWait time={commit.nextPlacementAfter} /> : null}</div>
       </div>
       <div ref={containerRef} className="h-full">
         <TransformWrapper
@@ -430,6 +430,7 @@ function Place() {
               width={place.colors[0].length}
               height={place.colors.length}
               shape-rendering="crispEdges"
+              style={{ color: selectedColor }}
             >
               {place.colors.map((colorsRow, y) => (
                 <g key={y}>
@@ -441,7 +442,17 @@ function Place() {
                       height={1}
                       fill={color}
                       key={`${x}-${y}`}
-                      className="hover:outline hover:outline-base-700 hover:z-10"
+                      onMouseEnter={
+                        // move to top
+                        (event) => {
+                          event.currentTarget.setAttribute("stroke", "currentColor");
+                          event.currentTarget.setAttribute("stroke-width", "0.2");
+                        }
+                      }
+                      onMouseLeave={(event) => {
+                        event.currentTarget.removeAttribute("stroke");
+                        event.currentTarget.removeAttribute("stroke-width");
+                      }}
                       onClick={() => colorPixelMutation.mutate({ x, y })}
                     />
                   ))}

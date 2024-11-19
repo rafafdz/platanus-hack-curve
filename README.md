@@ -7,13 +7,13 @@ Display interactivo para hackathones.
 - [x] Countdown
 - [x] Siguientes actividades
 - [x] Feed de eventos push de GitHub
-- [ ] Anuncios
-- [ ] Música actual
-  - [ ] Via API
+- [x] Anuncios
+- [x] Música actual
+  - [x] Via API
 - [ ] Tarjetas para destacar equipos
-- [ ] Pantalla interactiva
-  - [ ] ????
-  - [ ] Embed IFrame
+- [x] Pantalla interactiva
+  - [x] ????
+  - [x] Embed IFrame
 
 ## Stack
 

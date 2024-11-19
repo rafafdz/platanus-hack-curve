@@ -131,14 +131,14 @@ export const getLastPlacedCommitBySelf = query({
   args: { eventSlug: v.string() },
   handler: async (ctx, { eventSlug }) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) throw new ConvexError({ code: 401, message: "Unauthorized" });
+    if (!userId) return null;
 
     const event = await ctx.db
       .query("events")
       .withIndex("by_slug", (q) => q.eq("slug", eventSlug))
       .unique();
 
-    if (!event) throw new ConvexError({ code: 404, message: "Event not found" });
+    if (!event) return null;
 
     const isEventAdmin = await checkIfIsEventAdmin(ctx, event._id);
 

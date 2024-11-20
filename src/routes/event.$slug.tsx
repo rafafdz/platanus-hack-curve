@@ -72,8 +72,8 @@ function RouteComponent() {
 
   return (
     <div className={gridStyles({ fullscreen })}>
-      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col justify-between" })}>
-        <div className="sm:flex flex-col gap-2">
+      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col justify-between gap-2" })}>
+        <div className="sm:flex flex-col gap-2 shrink-0">
           <GoToAdmin />
         </div>
         <div className="flex flex-col gap-2">
@@ -146,7 +146,7 @@ function GoToAdmin() {
 }
 
 const activitiesStyles = cva({
-  base: "bg-base-800 text-base-100 rounded-md p-2",
+  base: "bg-base-800 text-base-100 rounded-md p-2 shrink-0",
   variants: {
     state: {
       active: "text-primary-950 bg-primary-500",
@@ -181,7 +181,7 @@ function Activities() {
   const { data: activities } = useSuspenseQuery(convexQuery(api.activities.listByEventSlug, { eventSlug: slug }));
 
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex flex-col-reverse overflow-y-auto gap-2 h-min">
       {activities
         .filter((activity) => activity.endsAt > Date.now())
         .reverse()
@@ -318,7 +318,7 @@ function PushEvents() {
       splitPushEvents({
         data: pushEvents,
         bins: 5,
-        by: (event) => event.timestamp,
+        by: (event) => Math.round(event.timestamp / 10000) * event._id.charCodeAt(event._id.length - 1),
       }),
     [pushEvents]
   );
@@ -415,6 +415,11 @@ function Place() {
   const colorPixel = useConvexMutation(api.place.updateColor).withOptimisticUpdate((store, { cell, eventId }) => {
     const place = store.getQuery(api.place.get, { eventSlug: slug });
     if (!place) return;
+    if (commit?.nextPlacementAfter && commit.nextPlacementAfter > Date.now()) {
+      alert(`Espera por ${formatTimeLeft(commit.nextPlacementAfter - Date.now())}`);
+      return;
+    }
+
     place.colors[cell.y][cell.x] = cell.color;
     store.setQuery(api.place.get, { eventSlug: slug }, place);
   });

@@ -18,7 +18,7 @@ function HomeComponent() {
     <div className="p-2 max-w-lg mx-auto flex flex-col h-full">
       <div className="grow flex flex-col">
         <h1 className="text-center mb-2">Hack</h1>
-        <ul className="w-full max-w-sm mx-auto">
+        <ul className="w-full max-w-sm mx-auto flex flex-col gap-2">
           {events?.map((event) => (
             <li key={event._id}>
               <Link

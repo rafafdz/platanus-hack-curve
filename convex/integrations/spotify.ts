@@ -5,7 +5,7 @@ import { internal } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { HttpRouter } from "convex/server";
 
-const delayBetweenStateRefresh = 30 * 1000;
+const delayBetweenStateRefresh = 5 * 1000;
 
 function generateRandomState() {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)))
@@ -283,7 +283,7 @@ export const updateCurrentlyPlaying = internalMutation({
     }
 
     const scheduledUpdateState = await ctx.scheduler.runAfter(
-      delayBetweenStateRefresh * (track ? 1 : 5),
+      delayBetweenStateRefresh * (track ? 1 : 10),
       internal.integrations.spotify.refreshState,
       {
         eventId,

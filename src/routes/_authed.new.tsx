@@ -25,10 +25,10 @@ function RouteComponent() {
         slug,
         endsAt: new Date(endsAt).getTime(),
         place: {
-          defaultColor: "d8d8d8",
-          colorOptions: ["#d8d8d8", "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"],
-          width: 100,
-          height: 40,
+          defaultColor: "#09090b",
+          colorOptions: ["#09090b", "#fafafa", "#dc2626", "#ca8a04", "#16a34a", "#2563eb", "#7e22ce"],
+          width: 80,
+          height: 32,
         },
       });
     },

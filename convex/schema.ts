@@ -54,7 +54,8 @@ const schema = defineSchema({
   placeState: defineTable({
     eventId: v.id("events"),
     colorOptions: v.array(v.string()),
-    colors: v.array(v.array(v.string())),
+    height: v.number(),
+    width: v.number(),
   }).index("by_eventId", ["eventId"]),
   placeCommits: defineTable({
     eventId: v.id("events"),
@@ -63,6 +64,11 @@ const schema = defineSchema({
     y: v.number(),
     color: v.string(),
   }).index("by_eventId_userId", ["eventId", "userId"]),
+  placePixelsRows: defineTable({
+    eventId: v.id("events"),
+    y: v.number(),
+    colors: v.array(v.string()),
+  }).index("by_eventId_y", ["eventId", "y"]),
   // Spotify
   spotifyConnections: defineTable({
     eventId: v.id("events"),

@@ -2,7 +2,7 @@ import { createFileRoute, ErrorComponentProps, Link } from "@tanstack/react-rout
 import { queryClient } from "../client";
 import { convexQuery, useConvexAuth, useConvexMutation } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Marquee from "react-fast-marquee";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
@@ -405,6 +405,7 @@ function PlaceLoading() {
     </div>
   );
 }
+
 function Place() {
   const { slug } = Route.useParams();
   const { data: commit } = useSuspenseQuery(convexQuery(api.place.getLastPlacedCommitBySelf, { eventSlug: slug }));
@@ -412,16 +413,25 @@ function Place() {
   const { signIn } = useAuthActions();
   const { data: place } = useSuspenseQuery(convexQuery(api.place.get, { eventSlug: slug }));
 
-  const colorPixel = useConvexMutation(api.place.updateColor).withOptimisticUpdate((store, { cell, eventId }) => {
-    const place = store.getQuery(api.place.get, { eventSlug: slug });
-    if (!place) return;
+  const pixelQueries = useMemo(() => {
+    const queries = [];
+    for (let y = 0; y < place.height; y++) {
+      queries.push(convexQuery(api.place.getPixelRow, { eventSlug: slug, y }));
+    }
+    return queries;
+  }, [place.height, place.width, slug]);
+
+  const pixelsRows = useSuspenseQueries({ queries: pixelQueries });
+
+  const colorPixel = useConvexMutation(api.place.updateColor).withOptimisticUpdate((store, { cell }) => {
+    const row = store.getQuery(api.place.getPixelRow, { eventSlug: slug, y: cell.y });
+    if (!row) return;
     if (commit?.nextPlacementAfter && commit.nextPlacementAfter > Date.now()) {
       alert(`Espera por ${formatTimeLeft(commit.nextPlacementAfter - Date.now())}`);
       return;
     }
-
-    place.colors[cell.y][cell.x] = cell.color;
-    store.setQuery(api.place.get, { eventSlug: slug }, place);
+    row.colors[cell.x] = cell.color;
+    store.setQuery(api.place.getPixelRow, { eventSlug: slug, y: cell.y }, row);
   });
 
   const [selectedColor, setSelectedColor] = useState(place.colorOptions[0]);
@@ -431,7 +441,6 @@ function Place() {
 
   const handleResize = useCallback(() => {
     if (!containerRef.current) return;
-
     const { width, height } = containerRef.current.getBoundingClientRect();
     setContainerSize({ width, height });
   }, []);
@@ -440,13 +449,13 @@ function Place() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [handleResize]);
+  }, []);
 
   const scale = useMemo(() => {
     if (!containerSize.width || !containerSize.height) return 1;
-    const scale = Math.min(containerSize.width / place.colors[0].length, containerSize.height / place.colors.length);
+    const scale = Math.min(containerSize.width / place.width, containerSize.height / place.height);
     return scale;
-  }, [containerSize, place.colors]);
+  }, [containerSize, place.width, place.height]);
 
   const colorPixelMutation = useMutation({
     mutationFn: async ({ x, y }: { x: number; y: number }) => {
@@ -489,44 +498,54 @@ function Place() {
         >
           <TransformComponent wrapperClass="bg-base-800 rounded" wrapperStyle={{ width: "100%", height: "100%" }}>
             <svg
-              viewBox={`0 0 ${place.colors[0].length} ${place.colors.length}`}
-              width={place.colors[0].length}
-              height={place.colors.length}
-              shape-rendering="crispEdges"
+              viewBox={`0 0 ${place.width} ${place.height}`}
+              width={place.width}
+              height={place.height}
+              shapeRendering="crispEdges"
               style={{ color: selectedColor }}
             >
-              {place.colors.map((colorsRow, y) => (
-                <g key={y}>
-                  {colorsRow.map((color, x) => (
-                    <rect
-                      x={x}
-                      y={y}
-                      width={1}
-                      height={1}
-                      fill={color}
-                      key={`${x}-${y}`}
-                      onMouseEnter={
-                        // move to top
-                        (event) => {
-                          event.currentTarget.setAttribute("stroke", "currentColor");
-                          event.currentTarget.setAttribute("stroke-width", "0.2");
-                        }
-                      }
-                      onMouseLeave={(event) => {
-                        event.currentTarget.removeAttribute("stroke");
-                        event.currentTarget.removeAttribute("stroke-width");
-                      }}
-                      onClick={() => colorPixelMutation.mutate({ x, y })}
-                    />
-                  ))}
-                </g>
-              ))}
+              <Pixels pixelsRows={pixelsRows} mutate={colorPixelMutation.mutate} />
             </svg>
           </TransformComponent>
         </TransformWrapper>
       </div>
     </div>
   );
+}
+
+function Pixels({
+  pixelsRows,
+  mutate,
+}: {
+  pixelsRows: Array<{ data: { colors: Array<string> } }>;
+  mutate: ({ x, y }: { x: number; y: number }) => void;
+}) {
+  return pixelsRows.map((colorsRow, y) => (
+    <g key={y}>
+      {colorsRow.data.colors.map((color, x) => (
+        <rect
+          x={x}
+          y={y}
+          width={1}
+          height={1}
+          fill={color}
+          key={`${x}-${y}`}
+          onMouseEnter={
+            // move to top
+            (event) => {
+              event.currentTarget.setAttribute("stroke", "currentColor");
+              event.currentTarget.setAttribute("stroke-width", "0.2");
+            }
+          }
+          onMouseLeave={(event) => {
+            event.currentTarget.removeAttribute("stroke");
+            event.currentTarget.removeAttribute("stroke-width");
+          }}
+          onClick={() => mutate({ x, y })}
+        />
+      ))}
+    </g>
+  ));
 }
 
 function TimeToWait({ time }: { time: number }) {

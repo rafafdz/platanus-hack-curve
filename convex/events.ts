@@ -1,7 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { createPlace } from "./place";
+import { createPlace, deletePlace } from "./place";
+import { deleteSpotifyConnection } from "./admin/spotify";
 
 export const getBySlug = query({
   args: { slug: v.string() },
@@ -115,25 +116,18 @@ const _delete = internalMutation({
       await ctx.db.delete(event._id);
     }
 
-    const placeState = await ctx.db
-      .query("placeState")
+    await deletePlace(ctx, id);
+
+    await deleteSpotifyConnection(ctx, id);
+
+    const teams = await ctx.db
+      .query("teams")
       .withIndex("by_eventId", (q) => q.eq("eventId", id))
-      .unique();
-
-    if (placeState) {
-      await ctx.db.delete(placeState._id);
-    }
-
-    const placeCommits = await ctx.db
-      .query("placeCommits")
-      .withIndex("by_eventId_userId", (q) => q.eq("eventId", id))
       .collect();
 
-    for (const commit of placeCommits) {
-      await ctx.db.delete(commit._id);
+    for (const team of teams) {
+      await ctx.db.delete(team._id);
     }
-
-    await ctx.db.delete(id);
   },
 });
 

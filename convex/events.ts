@@ -40,6 +40,9 @@ export const create = mutation({
   },
   handler: async (ctx, { name, slug, endsAt, place }) => {
     const userId = await getAuthUserId(ctx);
+    if (process.env.DISABLED_NEW === "true")
+      throw new ConvexError({ status: 403, message: "Creating events is disabled" });
+
     if (!userId) throw new ConvexError({ status: 401, message: "Unauthorized" });
     if (/[^a-z0-9-]/.test(slug)) throw new ConvexError({ status: 400, message: "Invalid slug" });
 

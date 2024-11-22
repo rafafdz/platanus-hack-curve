@@ -23,7 +23,13 @@ const schema = defineSchema({
     fullScreenActivity: v.optional(v.boolean()),
     iframe: v.optional(v.string()),
     teamToShowId: v.optional(v.id("teams")),
-    currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams"), v.literal("🍌🪩")),
+    currentActivity: v.union(
+      v.literal("iframe"),
+      v.literal("place"),
+      v.literal("teams"),
+      v.literal("🍌🪩"),
+      v.literal("off")
+    ),
   })
     .index("by_slug", ["slug"])
     .index("by_isPublic", ["isPublic"]),

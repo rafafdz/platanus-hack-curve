@@ -248,7 +248,7 @@ function CurrentSong() {
           <div className="text-base-400 text-ellipsis text-sm line-clamp-1">añadido por {track.addedBy}</div>
         )}
         {/* at the right, center */}
-        <div className="absolute right-0 inset-y-0 h-full flex items-center justify-center text-base-800 -z-10 pr-2">
+        <div className="absolute right-0 inset-y-0 h-full flex items-center justify-center text-base-700 -z-10 pr-2">
           <FluentMusicNote220Filled className="size-12" />
         </div>
       </div>
@@ -298,6 +298,10 @@ function DisplayActivity() {
   const { slug } = Route.useParams();
   const { data: event } = useSuspenseQuery(convexQuery(api.events.getBySlug, { slug }));
   const { data: team } = useSuspenseQuery(convexQuery(api.teams.getCurrent, { eventSlug: slug }));
+
+  if (event.currentActivity === "off") {
+    return null;
+  }
 
   if (event.iframe && event.currentActivity === "iframe") {
     return (

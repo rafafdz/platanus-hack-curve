@@ -66,7 +66,13 @@ export const patch = mutation({
       name: v.string(),
       endsAt: v.number(),
       iframe: v.optional(v.string()),
-      currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams"), v.literal("🍌🪩")),
+      currentActivity: v.union(
+        v.literal("iframe"),
+        v.literal("place"),
+        v.literal("teams"),
+        v.literal("🍌🪩"),
+        v.literal("off")
+      ),
       fullScreenActivity: v.optional(v.boolean()),
       teamToShowId: v.optional(v.id("teams")),
     }),

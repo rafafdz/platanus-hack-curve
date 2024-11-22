@@ -147,6 +147,12 @@ function GeneralConfig() {
               </span>
               🍌🪩
             </RadioGroup.Item>
+            <RadioGroup.Item value="off" className="block">
+              <span className="data-[state=checked]:bg-base-800 inline-block w-2 mr-2 bg-base-700">
+                <RadioGroup.Indicator>×</RadioGroup.Indicator>
+              </span>
+              Apagar
+            </RadioGroup.Item>
           </RadioGroup.Root>
         </div>
         <div>

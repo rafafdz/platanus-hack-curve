@@ -44,7 +44,7 @@ const gridStyles = cva({
   variants: {
     fullscreen: {
       true: "",
-      false: "sm:grid-cols-[25%_75%] sm:grid-rows-[1fr_min-content_min-content]",
+      false: "sm:grid-cols-[350px_1fr] sm:grid-rows-[1fr_min-content_min-content]",
     },
   },
   defaultVariants: {
@@ -53,7 +53,7 @@ const gridStyles = cva({
 });
 
 const activityContainerStyles = cva({
-  base: "sm:h-full w-ful h-36",
+  base: "sm:h-full w-ful h-48",
   variants: {
     fullscreen: {
       true: "",
@@ -75,10 +75,10 @@ function RouteComponent() {
       <motion.div
         className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col justify-between gap-2" })}
       >
-        <div className="sm:flex flex-col gap-2 shrink-0">
+        <div className="hidden sm:flex flex-col gap-2 shrink-0">
           <GoToAdmin />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col-reverse gap-2">
           <Activities />
         </div>
       </motion.div>
@@ -183,7 +183,7 @@ function Activities() {
   const { data: activities } = useSuspenseQuery(convexQuery(api.activities.listByEventSlug, { eventSlug: slug }));
 
   return (
-    <ul className="flex flex-col-reverse overflow-y-auto gap-2 h-min">
+    <ul className="flex flex-col justify-end overflow-y-auto gap-2 h-full">
       {activities
         .filter((activity) => activity.endsAt > Date.now())
         .reverse()
@@ -271,8 +271,8 @@ function TimeLeft() {
         <>Ended</>
       ) : (
         <>
-          <div className="text-base-400">Ends in</div>
-          <div className="text-6xl">{formatTimeLeft(timeLeft)}</div>
+          <div className="text-base-500">Ends in</div>
+          <div className="text-6xl text-base-200">{formatTimeLeft(timeLeft)}</div>
         </>
       )}
     </div>
@@ -598,11 +598,11 @@ function QR({ value, className }: { value: string; className?: string }) {
 }
 function Team({ team }: { team: { name: string; url: string; members: { githubUser: string }[] } }) {
   return (
-    <div className="flex gap-12 items-center justify-center h-full">
+    <div className="flex gap-12 items-end justify-center h-full py-12">
       <div>
-        <QR value={team.url} className="size-48" />
+        <QR value={team.url} className="size-48 text-base-300" />
       </div>
-      <div className="flex flex-col justify-center">
+      <div className="flex flex-col justify-end pb-2">
         <div className="text-4xl mb-2">{team.name}</div>
         <ul className="flex flex-col gap-2">
           {team.members.map((member) => (

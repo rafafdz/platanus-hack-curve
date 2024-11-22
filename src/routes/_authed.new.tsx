@@ -26,7 +26,7 @@ function RouteComponent() {
         endsAt: new Date(endsAt).getTime(),
         place: {
           defaultColor: "#09090b",
-          colorOptions: ["#09090b", "#fafafa", "#dc2626", "#ca8a04", "#16a34a", "#2563eb", "#7e22ce"],
+          colorOptions: ["#09090b", "#d4d4d8", "#dc2626", "#ca8a04", "#16a34a", "#2563eb", "#7e22ce"],
           width: 80,
           height: 32,
         },

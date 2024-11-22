@@ -201,7 +201,7 @@ function Activities() {
           >
             <div>
               <div className="font-bold text-2xl">{activity.name}</div>
-              <div>
+              <div className="font-semibold">
                 <ActivityDateTime startsAt={activity.startsAt} endsAt={activity.endsAt} />
               </div>
             </div>

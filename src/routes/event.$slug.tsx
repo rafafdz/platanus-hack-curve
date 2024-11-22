@@ -151,8 +151,8 @@ const activitiesStyles = cva({
   base: "text-base-100 rounded-md p-2 shrink-0",
   variants: {
     state: {
-      active: "text-primary-950 bg-primary-500",
-      soon: "bg-base-800",
+      active: "text-primary-950 bg-primary-600",
+      soon: "bg-base-900",
       default: "bg-base-950",
     },
   },
@@ -266,7 +266,7 @@ function TimeLeft() {
   }, [event.endsAt]);
 
   return (
-    <div className="bg-base-800 flex justify-center flex-col items-center p-2 rounded-sm leading-none grow">
+    <div className="bg-base-900 flex justify-center flex-col items-center p-2 rounded-sm leading-none grow">
       {timeLeft < 0 ? (
         <>Ended</>
       ) : (

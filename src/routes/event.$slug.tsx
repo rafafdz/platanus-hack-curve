@@ -7,7 +7,7 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import Marquee from "react-fast-marquee";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import * as RadioGroup from "@radix-ui/react-radio-group";
-
+import { motion } from "motion/react";
 import { cva } from "cva";
 import { FunctionReturnType } from "convex/server";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -71,17 +71,19 @@ function RouteComponent() {
   const fullscreen = event.fullScreenActivity;
 
   return (
-    <div className={gridStyles({ fullscreen })}>
-      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col justify-between gap-2" })}>
+    <motion.div className={gridStyles({ fullscreen })}>
+      <motion.div
+        className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col justify-between gap-2" })}
+      >
         <div className="sm:flex flex-col gap-2 shrink-0">
           <GoToAdmin />
         </div>
         <div className="flex flex-col gap-2">
           <Activities />
         </div>
-      </div>
+      </motion.div>
 
-      <div
+      <motion.div
         className={hiddenOnFullScreenStyles({
           fullscreen,
           className: "sm:row-start-2 flex flex-col gap-2 h-full row-start-1 sm:row-auto",
@@ -89,20 +91,20 @@ function RouteComponent() {
       >
         <CurrentSong />
         <TimeLeft />
-      </div>
+      </motion.div>
 
-      <div className={activityContainerStyles({ fullscreen })}>
+      <motion.div layout className={activityContainerStyles({ fullscreen })}>
         <DisplayActivity />
-      </div>
+      </motion.div>
 
-      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col gap-1" })}>
+      <motion.div className={hiddenOnFullScreenStyles({ fullscreen, className: "flex flex-col gap-1" })}>
         <PushEvents />
-      </div>
+      </motion.div>
 
-      <div className={hiddenOnFullScreenStyles({ fullscreen, className: "sm:col-span-2" })}>
+      <motion.div className={hiddenOnFullScreenStyles({ fullscreen, className: "sm:col-span-2" })}>
         <AnnouncementOrURL />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -231,13 +233,22 @@ function CurrentSong() {
   if (!track) return null;
 
   return (
-    <div className="flex gap-2 items-center bg-base-900 rounded-sm p-2">
+    <motion.div
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring" }}
+      exit={{ y: 100 }}
+      className="flex gap-2 items-center bg-base-900 rounded-sm p-2 -z-10"
+    >
       <img src={track.image} alt={track.name} className="w-12 h-12 rounded-md shrink-0" />
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col  leading-none">
         <div className="font-bold text-xl leading-tight text-base-200 line-clamp-1">{track.name}</div>
         <div className="text-base-300 text-ellipsis line-clamp-1">{track.artist}</div>
+        {track.addedBy === null ? null : (
+          <div className="text-base-400 text-ellipsis text-sm line-clamp-1">añadido por {track.addedBy}</div>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -289,6 +300,10 @@ function DisplayActivity() {
     return <Team team={team} />;
   }
 
+  if (event.currentActivity === "🍌🪩") {
+    return <div className="bananadance" />;
+  }
+
   return (
     <Suspense fallback={<PlaceLoading />}>
       <Place />
@@ -326,11 +341,11 @@ function PushEvents() {
   return (
     <div className="flex flex-col justify-between gap-1 relative min-w-full">
       {binned.map((bin, i) => (
-        <div key={i} className="flex flex-row gap-1 overflow-clip w-max h-7">
+        <motion.div key={i} className="flex flex-row gap-1 overflow-clip w-max h-7">
           {bin.map((pushEvent) => (
             <PushEvent pushEvent={pushEvent} key={pushEvent._id} />
           ))}
-        </div>
+        </motion.div>
       ))}
       <div className="absolute inset-y-0 right-0 -mr-8 w-24 bg-gradient-to-l from-base-900 to-transparent" />
     </div>
@@ -339,7 +354,14 @@ function PushEvents() {
 
 function PushEvent({ pushEvent }: { pushEvent: FunctionReturnType<typeof api.githubPushEvents.list>[number] }) {
   return (
-    <div className="p-[1px] rounded-sm simple-gradient" style={{ "--simple-gradient-hue": pushEvent.timestamp % 360 }}>
+    <motion.div
+      initial={{ x: -100 }}
+      animate={{ x: 0 }}
+      transition={{ type: "spring" }}
+      exit={{ opacity: 0 }}
+      className="p-[1px] rounded-sm simple-gradient"
+      style={{ "--simple-gradient-hue": pushEvent.timestamp % 360 }}
+    >
       <div className="inline-flex gap-2 items-center px-2 bg-base-900/95 h-full rounded-xs text-sm">
         <img
           src={`https://github.com/${pushEvent.author}.png`}
@@ -352,7 +374,7 @@ function PushEvent({ pushEvent }: { pushEvent: FunctionReturnType<typeof api.git
         <span className="text-base-300/75 font-light shrink-0">to</span>
         <span className="text-base-200 shrink-0">{pushEvent.repoName}</span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

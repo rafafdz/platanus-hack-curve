@@ -66,7 +66,7 @@ export const patch = mutation({
       name: v.string(),
       endsAt: v.number(),
       iframe: v.optional(v.string()),
-      currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams")),
+      currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams"), v.literal("🍌🪩")),
       fullScreenActivity: v.optional(v.boolean()),
       teamToShowId: v.optional(v.id("teams")),
     }),
@@ -85,3 +85,65 @@ const _delete = mutation({
   },
 });
 export { _delete as delete };
+
+export const listAdmins = query({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, { eventId }) => {
+    await assertEventAuthorization(ctx, eventId);
+
+    const eventAdmins = await ctx.db
+      .query("eventAdmins")
+      .withIndex("by_eventId_userId", (q) => q.eq("eventId", eventId))
+      .collect();
+
+    const users = await Promise.all([
+      ...eventAdmins.map(async (ea) => {
+        const user = await ctx.db.get(ea.userId);
+        if (!user) throw new ConvexError({ code: 500, message: "Invalid state" });
+        return user;
+      }),
+    ]);
+
+    return users;
+  },
+});
+
+export const addAdmin = mutation({
+  args: { eventId: v.id("events"), userId: v.id("users") },
+  handler: async (ctx, { eventId, userId }) => {
+    await assertEventAuthorization(ctx, eventId);
+    const eventAdmin = await ctx.db
+      .query("eventAdmins")
+      .withIndex("by_eventId_userId", (q) => q.eq("eventId", eventId).eq("userId", userId))
+      .unique();
+
+    if (eventAdmin) throw new ConvexError({ code: 400, message: "User is already an admin" });
+
+    await ctx.db.insert("eventAdmins", { eventId, userId });
+  },
+});
+
+export const removeAdmin = mutation({
+  args: { eventId: v.id("events"), userId: v.id("users") },
+  handler: async (ctx, { eventId, userId }) => {
+    await assertEventAuthorization(ctx, eventId);
+
+    const admins = await ctx.db
+      .query("eventAdmins")
+      .withIndex("by_eventId_userId", (q) => q.eq("eventId", eventId))
+      .collect();
+
+    let adminId = null;
+    for (const admin of admins) {
+      if (admin.userId === userId) {
+        adminId = admin._id;
+        break;
+      }
+    }
+
+    if (!adminId) throw new ConvexError({ code: 404, message: "Admin not found" });
+    if (admins.length === 1) throw new ConvexError({ code: 400, message: "Cannot remove the last admin" });
+
+    await ctx.db.delete(adminId);
+  },
+});

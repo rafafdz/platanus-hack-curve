@@ -17,7 +17,7 @@ export const list = query({
       .query("githubPushEvents")
       .withIndex("by_eventId", (q) => q.eq("eventId", event._id))
       .order("desc")
-      .take(60);
+      .take(30);
 
     return pushEvents;
   },

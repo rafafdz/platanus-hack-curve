@@ -9,6 +9,7 @@ import { Copiable } from "../../components/admin/copiable";
 import { queryClient } from "../../client";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { Id } from "../../../convex/_generated/dataModel";
+import { useAuthToken } from "@convex-dev/auth/react";
 
 const siteHttpUrl = import.meta.env.VITE_CONVEX_URL.replace(".convex.cloud", ".convex.site");
 
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_authed/admin/$id/")({
       queryClient.ensureQueryData(convexQuery(api.admin.github.getConfig, { id })),
       queryClient.ensureQueryData(convexQuery(api.admin.spotify.getConnection, { id })),
       queryClient.ensureQueryData(convexQuery(api.admin.teams.list, { eventId: id })),
+      queryClient.ensureQueryData(convexQuery(api.admin.events.listAdmins, { eventId: id })),
     ]);
   },
   component: RouteComponent,
@@ -34,7 +36,11 @@ function RouteComponent() {
       <GitHubConfig />
       <hr className="my-4 border-base-500" />
       <h2 className="font-bold">Spotify</h2>
+      <p>Uno puede adicionalmente actualizar la música via HTTP</p>
       <SpotifyConfig />
+      <hr className="my-4 border-base-500" />
+      <h2 className="font-bold">Admins</h2>
+      <Admins />
     </>
   );
 }
@@ -134,6 +140,12 @@ function GeneralConfig() {
                 <RadioGroup.Indicator>×</RadioGroup.Indicator>
               </span>
               Equipos
+            </RadioGroup.Item>
+            <RadioGroup.Item value="🍌🪩" className="block">
+              <span className="data-[state=checked]:bg-base-800 inline-block w-2 mr-2 bg-base-700">
+                <RadioGroup.Indicator>×</RadioGroup.Indicator>
+              </span>
+              🍌🪩
             </RadioGroup.Item>
           </RadioGroup.Root>
         </div>
@@ -253,6 +265,60 @@ function SpotifyConfig() {
           Re-conectar
         </a>
       </div>
+    </div>
+  );
+}
+
+function Admins() {
+  const { id } = Route.useParams();
+  const { data: admins } = useSuspenseQuery(convexQuery(api.admin.events.listAdmins, { eventId: id }));
+  const addUser = useConvexMutation(api.admin.events.addAdmin);
+  const removeUser = useConvexMutation(api.admin.events.removeAdmin);
+  const addUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await addUser({ eventId: id, userId: userId as Id<"users"> });
+    },
+  });
+
+  const removeUserMutation = useMutation({
+    mutationFn: async (userId: Id<"users">) => {
+      await removeUser({ eventId: id, userId });
+    },
+  });
+
+  return (
+    <div>
+      <ul>
+        {admins.map((admin) => (
+          <li key={admin._id} className="flex h-6 items-center gap-2">
+            <img src={`https://github.com/${admin.githubLogin}.png`} className="w-6 h-6" />
+            <span>
+              {admin.name} - {admin._id} -{" "}
+              <Button
+                variant="danger"
+                onClick={() => removeUserMutation.mutate(admin._id)}
+                disabled={removeUserMutation.isPending}
+              >
+                Remover
+              </Button>
+            </span>
+          </li>
+        ))}
+      </ul>
+      {addUserMutation.isError && <div className="text-red-600">Error: {addUserMutation.error.message}</div>}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          addUserMutation.mutate(e.target[0].value);
+        }}
+      >
+        <Input type="text" placeholder="GitHub ID" />
+        <Button type="submit" disabled={addUserMutation.isPending}>
+          Agregar
+        </Button>
+      </form>
+      {addUserMutation.isSuccess && <div className="text-green-600">Agregado</div>}
+      {removeUserMutation.isError && <div className="text-red-600">Error: {removeUserMutation.error.message}</div>}
     </div>
   );
 }

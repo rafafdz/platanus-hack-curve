@@ -15,7 +15,7 @@ class WebhookHandler {
       const message = lastCommit.message;
       const author = event.payload.pusher.username || event.payload.sender?.login || "Unknown";
       const timestamp = new Date(lastCommit.timestamp).getTime();
-      const repoName = event.payload.repository.full_name;
+      const repoName = event.payload.repository.name;
       const branch = event.payload.ref.replace("refs/heads/", "");
       const pushEvent = { repoName, author, message, timestamp, branch };
       await ctx.runMutation(internal.integrations.github.addGitHubPushEvent, { eventId, pushEvent });

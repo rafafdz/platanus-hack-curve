@@ -1,5 +1,5 @@
 import * as Cookies from "cookie-es";
-import { httpAction, internalAction, internalMutation, internalQuery } from "../_generated/server";
+import { httpAction, internalAction, internalMutation, internalQuery, MutationCtx } from "../_generated/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
@@ -13,7 +13,7 @@ function generateRandomState() {
     .join("");
 }
 
-export const initiateOAuth = httpAction(async (ctx, request) => {
+const initiateOAuth = httpAction(async (ctx, request) => {
   const url = new URL(request.url);
   const eventId = url.searchParams.get("eventId");
   if (!eventId) return new Response("Missing event ID", { status: 400 });
@@ -39,7 +39,7 @@ export const initiateOAuth = httpAction(async (ctx, request) => {
   return new Response(null, { status: 302, headers: headers });
 });
 
-export const handleAuthRedirect = httpAction(async (ctx, request) => {
+const handleAuthRedirect = httpAction(async (ctx, request) => {
   const url = new URL(request.url);
 
   const code = url.searchParams.get("code");
@@ -271,16 +271,7 @@ export const updateCurrentlyPlaying = internalMutation({
 
     if (!connection) throw new Error("Connection not found");
 
-    const state = await ctx.db
-      .query("spotifyState")
-      .withIndex("by_eventId", (q) => q.eq("eventId", eventId))
-      .unique();
-
-    if (state) {
-      await ctx.db.patch(state._id, { track });
-    } else {
-      await ctx.db.insert("spotifyState", { eventId, track });
-    }
+    await updateCurrentSong(ctx, eventId, track);
 
     const scheduledUpdateState = await ctx.scheduler.runAfter(
       delayBetweenStateRefresh * (track ? 1 : 10),
@@ -294,6 +285,70 @@ export const updateCurrentlyPlaying = internalMutation({
   },
 });
 
+async function updateCurrentSong(
+  ctx: MutationCtx,
+  eventId: string,
+  track: { name: string; artist: string; image: string } | undefined
+) {
+  const id = ctx.db.normalizeId("events", eventId);
+  if (!id) throw new Error("Invalid event ID");
+
+  const state = await ctx.db
+    .query("spotifyState")
+    .withIndex("by_eventId", (q) => q.eq("eventId", id))
+    .unique();
+
+  if (state) {
+    await ctx.db.patch(state._id, { track });
+  } else {
+    await ctx.db.insert("spotifyState", { eventId: id, track });
+  }
+}
+
+export const updateState = internalMutation({
+  args: {
+    eventId: v.id("events"),
+    track: v.optional(
+      v.object({
+        name: v.string(),
+        artist: v.string(),
+        image: v.string(),
+        addedBy: v.optional(v.string()),
+      })
+    ),
+  },
+  handler: async (ctx, { eventId, track }) => {
+    await updateCurrentSong(ctx, eventId, track);
+  },
+});
+
+const showMusic = httpAction(async (ctx, request) => {
+  const data = await request.json();
+  const eventId = data?.eventId;
+  const trackName = data?.name;
+  const artist = data?.artists;
+  const image = data?.albumArt;
+  const addedBy = data?.addedBy;
+
+  if (!eventId || !trackName || !artist || !image) {
+    return new Response("Missing parameters", { status: 400 });
+  }
+
+  try {
+    await ctx.runMutation(internal.integrations.spotify.updateState, {
+      eventId,
+      track: { name: trackName, artist, image, addedBy: addedBy.trim() || undefined },
+    });
+    return new Response(null, { status: 200 });
+  } catch (e) {
+    if (e instanceof Error) {
+      return new Response(e.message, { status: 400 });
+    } else {
+      return new Response("Internal error", { status: 500 });
+    }
+  }
+});
+
 export function addHttpRoutes(http: HttpRouter) {
   http.route({
     method: "GET",
@@ -304,5 +359,10 @@ export function addHttpRoutes(http: HttpRouter) {
     method: "GET",
     path: "/integrations/spotify/auth/redirect",
     handler: handleAuthRedirect,
+  });
+  http.route({
+    method: "POST",
+    path: "/integrations/spotify/show-music",
+    handler: showMusic,
   });
 }

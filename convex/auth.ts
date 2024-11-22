@@ -10,6 +10,7 @@ export const { auth, signIn, signOut, store } = convexAuth({
         id: profile.id.toString(),
         name: profile.name,
         email: profile.email,
+        githubLogin: profile.login,
       }),
     }),
   ],

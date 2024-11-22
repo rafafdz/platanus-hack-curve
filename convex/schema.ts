@@ -4,6 +4,16 @@ import { v } from "convex/values";
 
 const schema = defineSchema({
   ...authTables,
+  users: defineTable({
+    name: v.string(),
+    githubLogin: v.string(),
+    image: v.optional(v.string()),
+    email: v.string(),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+  }).index("email", ["email"]),
   // core
   events: defineTable({
     name: v.string(),
@@ -13,7 +23,7 @@ const schema = defineSchema({
     fullScreenActivity: v.optional(v.boolean()),
     iframe: v.optional(v.string()),
     teamToShowId: v.optional(v.id("teams")),
-    currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams")),
+    currentActivity: v.union(v.literal("iframe"), v.literal("place"), v.literal("teams"), v.literal("🍌🪩")),
   })
     .index("by_slug", ["slug"])
     .index("by_isPublic", ["isPublic"]),
@@ -86,6 +96,7 @@ const schema = defineSchema({
         name: v.string(),
         artist: v.string(),
         image: v.string(),
+        addedBy: v.optional(v.string()),
       })
     ),
   }).index("by_eventId", ["eventId"]),

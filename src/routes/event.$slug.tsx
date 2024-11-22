@@ -44,7 +44,7 @@ const gridStyles = cva({
   variants: {
     fullscreen: {
       true: "",
-      false: "sm:grid-cols-[1fr_2fr] sm:grid-rows-[1fr_min-content_min-content]",
+      false: "sm:grid-cols-[1fr_3fr] sm:grid-rows-[1fr_min-content_min-content]",
     },
   },
   defaultVariants: {
@@ -271,7 +271,7 @@ function TimeLeft() {
         <>Ended</>
       ) : (
         <>
-          <div className="text-base-500">Ends in</div>
+          <div className="text-base-400">Ends in</div>
           <div className="text-6xl">{formatTimeLeft(timeLeft)}</div>
         </>
       )}

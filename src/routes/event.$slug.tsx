@@ -135,7 +135,7 @@ function GoToAdmin() {
   if (isSuccess) {
     return (
       <Link
-        className="flex justify-center items-center bg-base-950 h-9 rounded-sm"
+        className="flex justify-center items-center bg-base-900 h-9 rounded-sm"
         to="/admin/$id"
         params={{ id: event._id }}
       >
@@ -152,8 +152,8 @@ const activitiesStyles = cva({
   variants: {
     state: {
       active: "text-primary-950 bg-primary-600",
-      soon: "bg-base-900",
-      default: "bg-base-950",
+      soon: "bg-base-900 text-base-100",
+      default: "bg-base-950 text-base-300",
     },
   },
 });
@@ -200,8 +200,8 @@ function Activities() {
             })}
           >
             <div>
-              <div className="font-bold text-2xl">{activity.name}</div>
-              <div className="font-semibold">
+              <div className="font-black text-2xl">{activity.name}</div>
+              <div className="font-bold">
                 <ActivityDateTime startsAt={activity.startsAt} endsAt={activity.endsAt} />
               </div>
             </div>

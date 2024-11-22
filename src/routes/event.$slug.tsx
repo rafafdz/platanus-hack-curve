@@ -3,7 +3,7 @@ import { queryClient } from "../client";
 import { convexQuery, useConvexAuth, useConvexMutation } from "@convex-dev/react-query";
 import { api } from "../../convex/_generated/api";
 import { useMutation, useQuery, useSuspenseQueries, useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, SVGProps, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Marquee from "react-fast-marquee";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import * as RadioGroup from "@radix-ui/react-radio-group";
@@ -238,7 +238,7 @@ function CurrentSong() {
       animate={{ y: 0 }}
       transition={{ type: "spring" }}
       exit={{ y: 100 }}
-      className="flex gap-2 items-center bg-base-900 rounded-sm p-2 -z-10"
+      className="relative flex gap-2 items-center bg-base-900 rounded-sm p-2 -z-10 border-l-green-700 border-l-6"
     >
       <img src={track.image} alt={track.name} className="w-12 h-12 rounded-md shrink-0" />
       <div className="flex flex-col  leading-none">
@@ -247,8 +247,23 @@ function CurrentSong() {
         {track.addedBy === undefined ? undefined : (
           <div className="text-base-400 text-ellipsis text-sm line-clamp-1">añadido por {track.addedBy}</div>
         )}
+        {/* at the right, center */}
+        <div className="absolute right-0 inset-y-0 h-full flex items-center justify-center text-base-800 -z-10 pr-2">
+          <FluentMusicNote220Filled className="size-12" />
+        </div>
       </div>
     </motion.div>
+  );
+}
+
+function FluentMusicNote220Filled(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 20 20" {...props}>
+      <path
+        fill="currentColor"
+        d="M15.987 3.016a1 1 0 0 0-1.285-.79l-7 2.187A1 1 0 0 0 7 5.368V13.5a2.5 2.5 0 1 0 1 2V8.368l7-2.188v5.32a2.5 2.5 0 1 0 1 2V3.18q0-.083-.013-.164"
+      ></path>
+    </svg>
   );
 }
 

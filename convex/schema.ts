@@ -6,7 +6,7 @@ const schema = defineSchema({
   ...authTables,
   users: defineTable({
     name: v.string(),
-    githubLogin: v.string(),
+    githubLogin: v.optional(v.string()),
     image: v.optional(v.string()),
     email: v.string(),
     emailVerificationTime: v.optional(v.number()),

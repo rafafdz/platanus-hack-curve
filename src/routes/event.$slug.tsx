@@ -422,7 +422,7 @@ function AnnouncementOrURL() {
 
 function PlaceLoading() {
   return (
-    <div className="bg-base-300 text-base-900  items-center justify-center rounded-sm flex flex-col h-full">
+    <div className="bg-base-700 text-base-900  items-center justify-center rounded-sm flex flex-col h-full">
       Cargando
     </div>
   );

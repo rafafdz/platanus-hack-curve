@@ -44,7 +44,7 @@ const gridStyles = cva({
   variants: {
     fullscreen: {
       true: "",
-      false: "sm:grid-cols-[1fr_3fr] sm:grid-rows-[1fr_min-content_min-content]",
+      false: "sm:grid-cols-[25%_75%] sm:grid-rows-[1fr_min-content_min-content]",
     },
   },
   defaultVariants: {
@@ -135,7 +135,7 @@ function GoToAdmin() {
   if (isSuccess) {
     return (
       <Link
-        className="flex justify-center items-center bg-base-800 h-9 rounded-sm"
+        className="flex justify-center items-center bg-base-950 h-9 rounded-sm"
         to="/admin/$id"
         params={{ id: event._id }}
       >
@@ -148,12 +148,12 @@ function GoToAdmin() {
 }
 
 const activitiesStyles = cva({
-  base: "bg-base-800 text-base-100 rounded-md p-2 shrink-0",
+  base: "text-base-100 rounded-md p-2 shrink-0",
   variants: {
     state: {
       active: "text-primary-950 bg-primary-500",
       soon: "bg-base-800",
-      default: "bg-base-900",
+      default: "bg-base-950",
     },
   },
 });
@@ -266,7 +266,7 @@ function TimeLeft() {
   }, [event.endsAt]);
 
   return (
-    <div className="bg-base-900 flex justify-center flex-col items-center p-2 rounded-sm leading-none grow">
+    <div className="bg-base-800 flex justify-center flex-col items-center p-2 rounded-sm leading-none grow">
       {timeLeft < 0 ? (
         <>Ended</>
       ) : (
@@ -288,7 +288,7 @@ function DisplayActivity() {
     return (
       <iframe
         src={event.iframe}
-        className="bg-base-900 rounded-sm w-full h-full"
+        className="bg-base-950 rounded-sm w-full h-full"
         allow="autoplay;fullscreen;encrypted-media"
         referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
@@ -422,7 +422,7 @@ function AnnouncementOrURL() {
 
 function PlaceLoading() {
   return (
-    <div className="bg-base-700 text-base-900  items-center justify-center rounded-sm flex flex-col h-full">
+    <div className="bg-base-950 text-base-900  items-center justify-center rounded-sm flex flex-col h-full">
       Cargando
     </div>
   );
@@ -518,7 +518,7 @@ function Place() {
           wheel={{ smoothStep: 0.05 }}
           pinch={{ step: 10 }}
         >
-          <TransformComponent wrapperClass="bg-base-800 rounded" wrapperStyle={{ width: "100%", height: "100%" }}>
+          <TransformComponent wrapperClass="bg-base-950 rounded" wrapperStyle={{ width: "100%", height: "100%" }}>
             <svg
               viewBox={`0 0 ${place.width} ${place.height}`}
               width={place.width}

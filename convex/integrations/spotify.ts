@@ -328,7 +328,7 @@ const showMusic = httpAction(async (ctx, request) => {
   const trackName = data?.name;
   const artist = data?.artists;
   const image = data?.albumArt;
-  const addedBy = data?.addedBy;
+  const addedBy = data?.addedBy?.trim();
 
   if (!eventId || !trackName || !artist || !image) {
     return new Response("Missing parameters", { status: 400 });
@@ -337,7 +337,7 @@ const showMusic = httpAction(async (ctx, request) => {
   try {
     await ctx.runMutation(internal.integrations.spotify.updateState, {
       eventId,
-      track: { name: trackName, artist, image, addedBy: addedBy.trim() || undefined },
+      track: { name: trackName, artist, image, addedBy },
     });
     return new Response(null, { status: 200 });
   } catch (e) {

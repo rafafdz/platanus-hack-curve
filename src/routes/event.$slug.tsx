@@ -244,7 +244,7 @@ function CurrentSong() {
       <div className="flex flex-col  leading-none">
         <div className="font-bold text-xl leading-tight text-base-200 line-clamp-1">{track.name}</div>
         <div className="text-base-300 text-ellipsis line-clamp-1">{track.artist}</div>
-        {track.addedBy === null ? null : (
+        {track.addedBy === undefined ? undefined : (
           <div className="text-base-400 text-ellipsis text-sm line-clamp-1">añadido por {track.addedBy}</div>
         )}
       </div>

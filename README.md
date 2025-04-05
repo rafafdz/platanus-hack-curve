@@ -2,6 +2,10 @@
 
 Display interactivo para hackathones.
 
+![Hack Curve](https://github.com/user-attachments/assets/dbc4f56c-8447-42a0-adff-926ecc228845)
+
+
+
 ## Funcionalidades
 
 - [x] Countdown
